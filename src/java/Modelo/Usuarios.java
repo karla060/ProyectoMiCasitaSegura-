@@ -10,7 +10,7 @@ package Modelo;
  * @author gp
  */
 public class Usuarios {
-        private int id;
+    private int id;
     private String dpi;
     private String nombres;
     private String apellidos;
@@ -19,9 +19,10 @@ public class Usuarios {
     private int idRol;
  //   private final ObjectProperty<Lote> lote = new SimpleObjectProperty<>();
    // private final ObjectProperty<Casa> casa = new SimpleObjectProperty<>();
-   private Integer idLote;
-   private Integer idCasa;
+    private Integer idLote;
+    private Integer idCasa;
     private boolean activo;
+    private int dentro; // 0 = fuera, 1 = dentro
     
 
 
@@ -34,7 +35,7 @@ public class Usuarios {
 
    public Usuarios(int id, String dpi, String nombres, String apellidos,
                    String correo, String contrasena,
-                   int idRol, Integer idLote, Integer idCasa, boolean activo) {
+                   int idRol, Integer idLote, Integer idCasa, boolean activo, int dentro) {
         this.id = id;
         this.dpi = dpi;
         this.nombres = nombres;
@@ -45,6 +46,7 @@ public class Usuarios {
         this.idLote = idLote;
         this.idCasa = idCasa;
         this.activo = activo;
+        this.dentro = dentro;
     }
 
     public int getId() {
@@ -122,6 +124,14 @@ public class Usuarios {
     
     public void setIdLote(Integer idLote) 
     { this.idLote = idLote; }
+
+    public int getDentro() {
+        return dentro;
+    }
+
+    public void setDentro(int dentro) {
+        this.dentro = dentro;
+    }
    
 
 }

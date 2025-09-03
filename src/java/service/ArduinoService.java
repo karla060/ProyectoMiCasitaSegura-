@@ -8,56 +8,65 @@ package service;
 
 import com.fazecast.jSerialComm.SerialPort;
 
-/**
- * Servicio para controlar la talanquera vía Arduino usando jSerialComm.
- */
 public class ArduinoService {
 
     private SerialPort port;
 
     /**
-     * Abre el puerto serie en el constructor.
+     * Constructor: abre el puerto serie.
      *
-     * @param nombrePuerto Nombre del puerto (ej. "COM3", "/dev/ttyUSB0").
-     * @throws IllegalStateException si no puede abrir el puerto.
+     * @param nombrePuerto Nombre del puerto (ej. "COM3" o "/dev/ttyUSB0")
      */
     public ArduinoService(String nombrePuerto) {
-        // Obtiene el puerto por nombre
         port = SerialPort.getCommPort(nombrePuerto);
 
-        // Configura parámetros estándar
+        // Configuración básica del puerto
         port.setBaudRate(9600);
         port.setNumDataBits(8);
         port.setNumStopBits(SerialPort.ONE_STOP_BIT);
         port.setParity(SerialPort.NO_PARITY);
 
-        // Abre el puerto y lanza excepción si falla
+        // Abrir puerto
         if (!port.openPort()) {
             throw new IllegalStateException("No se pudo abrir el puerto " + nombrePuerto);
         }
 
-        // Ajuste opcional de timeouts
+        // Timeouts opcionales
         port.setComPortTimeouts(
-            SerialPort.TIMEOUT_READ_SEMI_BLOCKING,
-            /* readTimeoutMillis */ 2000,
-            /* writeTimeoutMillis */ 0
+                SerialPort.TIMEOUT_READ_SEMI_BLOCKING,
+                2000,  // read timeout
+                0      // write timeout
         );
     }
 
     /**
-     * Envía el comando OPEN al Arduino para abrir la talanquera.
+     * Envia el comando al Arduino por Serial.
      */
-    public void abrirTalanquera() {
+    private void enviarComando(String comando) {
         if (port != null && port.isOpen()) {
-            byte[] comando = "OPEN\n".getBytes();
-            port.writeBytes(comando, comando.length);
+            byte[] bytes = (comando + "\n").getBytes();
+            port.writeBytes(bytes, bytes.length);
         } else {
-            throw new IllegalStateException("Puerto no abierto");
+            throw new IllegalStateException("Puerto serie no abierto");
         }
     }
 
     /**
-     * Cierra el puerto serie. Llamar al finalizar para liberar recursos.
+     * Abre la talanquera de entrada (servo 1).
+     */
+    public void abrirEntrada() {
+        enviarComando("OPEN_IN");
+    }
+
+    /**
+     * Abre la talanquera de salida (servo 2).
+     */
+    public void abrirSalida() {
+        enviarComando("OPEN_OUT");
+    }
+
+    /**
+     * Cierra el puerto serial al finalizar.
      */
     public void cerrar() {
         if (port != null && port.isOpen()) {
@@ -67,42 +76,3 @@ public class ArduinoService {
 }
 
 
-
-
-
-
-/*
-package service;
-
-import com.fazecast.jSerialComm.SerialPort;
-
-
- // Servicio para abrir la talanquera enviando "OPEN\n" al Arduino.
- 
-public class ArduinoService {
-
-    private final SerialPort puerto;
-
-
-    public ArduinoService(String puertoSerie) {
-        this.puerto = SerialPort.getCommPort(puertoSerie);
-        this.puerto.setBaudRate(9600);
-        this.puerto.openPort();
-    }
-
-    // Envía al Arduino el comando para abrir la talanquera.
-     
-    public void abrirTalanquera() {
-        if (puerto.isOpen()) {
-            puerto.writeBytes("OPEN\n".getBytes(), "OPEN\n".length());
-        }
-    }
-
-    //Cierra el puerto serie cuando ya no se necesite.
-    public void cerrar() {
-        if (puerto.isOpen()) {
-            puerto.closePort();
-        }
-    }
-}
-*/

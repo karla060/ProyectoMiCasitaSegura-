@@ -114,7 +114,8 @@ public class UsuariosDAO {
                     rs.getInt("id_rol"),
                     rs.getObject("id_lote") != null ? rs.getInt("id_lote") : null,
                     rs.getObject("id_casa") != null ? rs.getInt("id_casa") : null,
-                    rs.getBoolean("activo")
+                    rs.getBoolean("activo"),
+                    rs.getInt("dentro")
                 );
                 lista.add(u);
             }
@@ -144,6 +145,9 @@ public class UsuariosDAO {
                     u.setIdLote(rs.getObject("id_lote") != null ? rs.getInt("id_lote") : null);
                     u.setIdCasa(rs.getObject("id_casa") != null ? rs.getInt("id_casa") : null);
                     u.setActivo(rs.getBoolean("activo"));
+                    u.setDentro(rs.getInt("dentro"));
+                    u.setDentro(rs.getInt("dentro"));
+
                     return u;
                 }
             }
@@ -152,4 +156,28 @@ public class UsuariosDAO {
         }
         return null;
     }
+    
+    public void actualizarEstado(int idUsuario, int dentro) {
+    String sql = "UPDATE usuarios SET dentro=? WHERE id_usuario=?";
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, dentro);
+        ps.setInt(2, idUsuario);
+        ps.executeUpdate();
+    } catch (SQLException e) {
+        System.err.println("Error actualizando estado: " + e.getMessage());
+        }
+    }
+    
+    public void registrarAuditoria(int idUsuario, String accion) {
+    String sql = "INSERT INTO auditoria (id_usuario, accion) VALUES (?, ?)";
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, idUsuario);
+        ps.setString(2, accion); // "entrada" o "salida"
+        ps.executeUpdate();
+    } catch (SQLException e) {
+        System.err.println("Error registrando auditoría: " + e.getMessage());
+    }
+}
+
+
 }
