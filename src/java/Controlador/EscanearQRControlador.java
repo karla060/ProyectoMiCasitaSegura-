@@ -144,7 +144,68 @@ private void manejarAccesoUsuario(Usuarios u, ResponseData res) throws Exception
     }
 }
 
+private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData res) throws Exception {
+    if (v == null) {
+        res.success = false;
+        res.message = "Visitante no encontrado";
+        System.out.println("[Visitante] Visitante no encontrado.");
+        return;
+    }
 
+    String tipo = v.getTipoVisita() != null ? v.getTipoVisita().trim().toLowerCase() : "";
+
+    // --- Validar reglas de visita SOLO si está intentando entrar ---
+    if (v.getDentro() == 0) { // Entrada
+        if ("por intentos".equals(tipo)) {
+            if (v.getIntentos() == null || v.getIntentos() <= 0) {
+                res.success = false;
+                res.message = "Acceso denegado - sin intentos disponibles";
+                System.out.println("[Visitante] Sin intentos: ID " + v.getId());
+                return;
+            }
+        } else if ("visita".equals(tipo) && v.getFechaVisita() != null) {
+            java.util.Date hoy = new java.util.Date();
+            if (hoy.after(v.getFechaVisita())) {
+                res.success = false;
+                res.message = "Acceso denegado - fecha expirada";
+                System.out.println("[Visitante] Fecha expirada: ID " + v.getId() + " (hoy: " + hoy + ")");
+                return;
+            }
+        }
+
+        // --- Restar intento solo al entrar ---
+        if ("por intentos".equals(tipo)) {
+            dao.restarIntentoSiCorresponde(v.getId());
+            v.setIntentos(v.getIntentos() - 1);
+            System.out.println("[Visitante] Intento restado en entrada: ID " + v.getId() + " - Quedan " + v.getIntentos());
+        }
+
+        // --- Abrir entrada ---
+        arduino.abrirEntrada();
+        dao.actualizarEstado(v.getId(), 1);
+        dao.registrarAuditoria(v.getId(), "entrada");
+
+        res.success = true;
+        res.nombre  = v.getNombre();
+        res.message = "Acceso autorizado - Entrada (Visitante)";
+        System.out.println("[Visitante] Entrada autorizada: ID " + v.getId());
+
+    } else { // Salida
+        // --- Abrir salida SIN validar intentos ---
+        arduino.abrirSalida();
+        dao.actualizarEstado(v.getId(), 0);
+        dao.registrarAuditoria(v.getId(), "salida");
+
+        res.success = true;
+        res.nombre  = v.getNombre();
+        res.message = "Acceso autorizado - Salida (Visitante)";
+        System.out.println("[Visitante] Salida autorizada: ID " + v.getId());
+    }
+}
+
+
+
+/*
 private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData res) throws Exception {
     if (v == null) {
         res.success = false;
@@ -164,11 +225,6 @@ private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData 
             return;
         }
 
-        // Restar intento en BD (sin bloquear acceso si falla)
-        dao.restarIntentoSiCorresponde(v.getId());
-        // Reflejarlo en el objeto local
-        v.setIntentos(v.getIntentos() - 1);
-        System.out.println("[Visitante] Intento restado: ID " + v.getId() + " - Quedan " + v.getIntentos());
     } 
     else if ("visita".equals(tipo) && v.getFechaVisita() != null) {
         java.util.Date hoy = new java.util.Date();
@@ -183,6 +239,13 @@ private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData 
     // --- Control entrada/salida ---
     if (v.getDentro() == 0) {
         // Entrada
+                if ("por intentos".equals(tipo)) {
+            // Restar intento solo en la entrada
+            dao.restarIntentoSiCorresponde(v.getId());
+            v.setIntentos(v.getIntentos() - 1);
+            System.out.println("[Visitante] Intento restado en entrada: ID " + v.getId() + " - Quedan " + v.getIntentos());
+        }
+        
         arduino.abrirEntrada();
         dao.actualizarEstado(v.getId(), 1);
         dao.registrarAuditoria(v.getId(), "entrada");
@@ -201,146 +264,21 @@ private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData 
         res.nombre  = v.getNombre();
         res.message = "Acceso autorizado - Salida (Visitante)";
         System.out.println("[Visitante] Salida autorizada: ID " + v.getId());
-    }
-}
-
-
-
-
-
-
-
-
-
-/*
-    private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData res) throws Exception {
-    if (v == null) {
-        res.success = false;
-        res.message = "Visitante no encontrado";
-        return;
-    }
-
-    // 1) Validar reglas de visita
-    if ("Por intentos".equalsIgnoreCase(v.getTipoVisita())) {
-        if (v.getIntentos() == null || v.getIntentos() <= 0) {
-            res.success = false;
-            res.message = "Acceso denegado - sin intentos disponibles";
-            System.out.println("[Visitante] Sin intentos: ID " + v.getId());
-            return;
-        }
-
-        // Restar intento de manera segura
-        boolean restado = dao.restarIntentoSiCorresponde(v.getId());
-        if (!restado) {
-            res.success = false;
-            res.message = "Acceso denegado - no se pudo restar intento";
-            System.out.println("[Visitante] ERROR al restar intento: ID " + v.getId() + ", intentos restantes: " + v.getIntentos());
-            System.out.println("[Visitante] ERROR al restar intento: ID " + v.getId());
-            return;
-        }
-
-        // Reflejarlo en el objeto local
-        v.setIntentos(v.getIntentos() - 1);
-        System.out.println("[Visitante] Intento restado en BD: ID " + v.getId() + " - Quedan " + v.getIntentos());
-    }
-    else if ("Visita".equalsIgnoreCase(v.getTipoVisita()) && v.getFechaVisita() != null) {
-        java.util.Date hoy = new java.util.Date();
-        if (hoy.after(v.getFechaVisita())) {
-            res.success = false;
-            res.message = "Acceso denegado - fecha expirada";
-            System.out.println("[Visitante] Fecha expirada: ID " + v.getId() + " (hoy: " + hoy + ")");
-            return;
-        }
-    }
-
-    // 2) Control entrada/salida
-    if (v.getDentro() == 0) {
-        // Entrada
-        arduino.abrirEntrada();
-        dao.actualizarEstado(v.getId(), 1);
-        dao.registrarAuditoria(v.getId(), "entrada");
-
-        res.success = true;
-        res.nombre  = v.getNombre();
-        res.message = "Acceso autorizado - Entrada (Visitante)";
-        System.out.println("[Visitante] Entrada autorizada: ID " + v.getId());
-    } else {
-        // Salida
-        arduino.abrirSalida();
-        dao.actualizarEstado(v.getId(), 0);
-        dao.registrarAuditoria(v.getId(), "salida");
-
-        res.success = true;
-        res.nombre  = v.getNombre();
-        res.message = "Acceso autorizado - Salida (Visitante)";
-        System.out.println("[Visitante] Salida autorizada: ID " + v.getId());
-    }
-}
-*/
-
-
-
-/*
-    private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData res) throws Exception {
-    String tipo = v.getTipoVisita() == null ? "" : v.getTipoVisita().trim();
-
-    // 1) Validar reglas de visita
-    if ("Por intentos".equalsIgnoreCase(tipo)) {
-
-        // 1.1) Sin intentos → denegar
-        if (v.getIntentos() <= 0) {
-            res.success = false;
-            res.message = "Acceso denegado - sin intentos disponibles";
-            System.out.println("[Visitante] Sin intentos: ID " + v.getId());
-            return;
-        }
-
-        // 1.2) Restar intento en BD
-        boolean restado = dao.restarIntentoSiCorresponde(v.getId());
-        System.out.println("[Visitante] Intento restado en BD: " + restado);
-        if (!restado) {
-            res.success = false;
-            res.message = "Acceso denegado - no se pudo restar intento";
-            System.out.println("[Visitante] ERROR al restar intento: ID " + v.getId());
-            return;
-        }
-
-        // 1.3) Reflejar en el objeto
-        v.setIntentos(v.getIntentos() - 1);
-
-    } else if ("Visita".equalsIgnoreCase(tipo) && v.getFechaVisita() != null) {
-        // Validar fecha
-        java.util.Date hoy = new java.util.Date();
-        if (hoy.after(v.getFechaVisita())) {
-            res.success = false;
-            res.message = "Acceso denegado - fecha expirada";
-            System.out.println("[Visitante] Fecha expirada: ID " + v.getId() + " (hoy: " + hoy + ")");
-            return;
-        }
-    }
-
-    // 2) Control dentro/fuera
-    if (v.getDentro() == 0) {
-        arduino.abrirEntrada();
-        dao.actualizarEstado(v.getId(), 1);
-        dao.registrarAuditoria(v.getId(), "entrada");
-        res.success = true;
-        res.nombre  = v.getNombre();
-        res.message = "Acceso autorizado - Entrada (Visitante)";
-        System.out.println("[Visitante] Entrada autorizada: ID " + v.getId());
-    } else {
-        arduino.abrirSalida();
-        dao.actualizarEstado(v.getId(), 0);
-        dao.registrarAuditoria(v.getId(), "salida");
-        res.success = true;
-        res.nombre  = v.getNombre();
-        res.message = "Acceso autorizado - Salida (Visitante)";
-        System.out.println("[Visitante] Salida autorizada: ID " + v.getId());
-    }
-}
-*/
+    }*/
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

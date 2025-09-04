@@ -23,7 +23,7 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Nuevo Usuario</h3>
-    <a href="index.jsp" class="btn btn-primary">Menú Principal</a>
+    
   </div>
 
   <!-- Mensajes -->
@@ -33,7 +33,8 @@
   <c:if test="${not empty mensaje}">
     <div class="alert alert-success">${mensaje}</div>
   </c:if>
-
+    
+    
   <form id="formCrearUsuario" action="CrearUsuario" method="post" class="row g-3">
 
     <div class="col-md-6">
