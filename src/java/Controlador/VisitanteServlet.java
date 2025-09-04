@@ -152,7 +152,7 @@ public class VisitanteServlet extends HttpServlet {
         if ("Por intentos".equalsIgnoreCase(tipoVisita)) {
             try {
                 intentos = Integer.parseInt(request.getParameter("intentos"));
-                if (intentos <= 1) errores.add("Intentos debe ser mayor a 1.");
+                if (intentos < 1) errores.add("Intentos debe al menos 1.");
             } catch (Exception e) {
                 errores.add("Intentos inválidos.");
             }

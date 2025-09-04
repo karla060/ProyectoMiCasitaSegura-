@@ -66,7 +66,7 @@ public class QRUtils {
         if (id <= 0) {
             throw new IllegalArgumentException("No se puede generar QR: id de visitante no válido");
         }
-        String contenido = "VISITANTE:" + id;
+        String contenido = String.valueOf(id);
         return generarBytes(contenido, ancho, alto);
     }
  

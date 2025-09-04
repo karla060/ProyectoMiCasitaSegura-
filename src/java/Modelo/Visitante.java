@@ -3,6 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package Modelo;
 
 /**
@@ -20,12 +25,12 @@ public class Visitante {
     private String dpi;
     private String tipoVisita;     // "Visita" | "Por intentos"
     private Date fechaVisita;      // si "Visita"
-    private int intentos;          // si "Por intentos"
+    private Integer intentos;          // si "Por intentos"
     private String correo;         // correo del visitante
     private String residente;      // nombre del residente en sesión
     private String qrCodigo;       // opcional: token único si decides persistirlo
     private Date fechaRegistro;    // timestamp de auditoría (alta o última actualización)
-
+    private int dentro;
     // Getters/Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -42,8 +47,14 @@ public class Visitante {
     public Date getFechaVisita() { return fechaVisita; }
     public void setFechaVisita(Date fechaVisita) { this.fechaVisita = fechaVisita; }
 
-    public int getIntentos() { return intentos; }
-    public void setIntentos(int intentos) { this.intentos = intentos; }
+    public Integer getIntentos() {
+        return intentos;
+    }
+
+    public void setIntentos(Integer intentos) {
+        this.intentos = intentos;
+    }
+
 
     public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
@@ -57,7 +68,15 @@ public class Visitante {
     public Date getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(Date fechaRegistro) { this.fechaRegistro = fechaRegistro; }
 
- 
+    public int getDentro() {
+        return dentro;
+    }
+
+    public void setDentro(int dentro) {
+        this.dentro = dentro;
+    }
+
+    
 
 // ...
 
