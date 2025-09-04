@@ -11,206 +11,184 @@
 <%@ page import="Modelo.Casa" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Crear Usuario</title>
-  <style>
-    form div { margin-bottom: 12px; }
-    label { display: inline-block; width: 120px; vertical-align: top; }
-    input, select { width: 240px; }
-    #btnGuardar:disabled {
-      background: #ccc;
-      cursor: pointer;
-      color:white;
-      padding: 6px 12px;
-      border:none;
-    }
-    
-      #btnLimpiar {
-      background: #ccc;
-      cursor: pointer;
-      color:black;
-      padding: 6px 12px;
-      border:none;
-    }
-  </style>
+  <% String ctx = request.getContextPath(); %>
+  <link rel="stylesheet" href="<%=ctx%>/css/bootstrap.min.css"/>
 </head>
 
-<body>
-  <h2>Nuevo Usuario</h2>
+<body class="p-4">
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Nuevo Usuario</h3>
+    <a href="index.jsp" class="btn btn-primary">Menú Principal</a>
+  </div>
 
+  <!-- Mensajes -->
   <c:if test="${not empty error}">
-    <div style="color:red; margin-bottom:12px;">${error}</div>
+    <div class="alert alert-danger">${error}</div>
   </c:if>
   <c:if test="${not empty mensaje}">
-    <div style="color:green; margin-bottom:12px;">${mensaje}</div>
+    <div class="alert alert-success">${mensaje}</div>
   </c:if>
 
-  <form id="formCrearUsuario" action="CrearUsuario" method="post">
-    <div>
-      <label for="dpi">DPI:</label>
-      <input id="dpi" name="dpi" type="text"/>
+  <form id="formCrearUsuario" action="CrearUsuario" method="post" class="row g-3">
+
+    <div class="col-md-6">
+      <label for="dpi" class="form-label">DPI</label>
+      <input id="dpi" name="dpi" type="text" class="form-control"/>
     </div>
-    <div>
-      <label for="nombres">Nombres:</label>
-      <input id="nombres" name="nombres" type="text"/>
+
+    <div class="col-md-6">
+      <label for="nombres" class="form-label">Nombres</label>
+      <input id="nombres" name="nombres" type="text" class="form-control"/>
     </div>
-    <div>
-      <label for="apellidos">Apellidos:</label>
-      <input id="apellidos" name="apellidos" type="text"/>
+
+    <div class="col-md-6">
+      <label for="apellidos" class="form-label">Apellidos</label>
+      <input id="apellidos" name="apellidos" type="text" class="form-control"/>
     </div>
-    <div>
-      <label for="correo">Correo:</label>
-      <input id="correo" name="correo" type="email"/>
+
+    <div class="col-md-6">
+      <label for="correo" class="form-label">Correo</label>
+      <input id="correo" name="correo" type="email" class="form-control"/>
     </div>
-    <div>
-      <label for="contrasena">Contraseña:</label>
-      <input id="contrasena" name="contrasena" type="password"/>
+
+    <div class="col-md-6">
+      <label for="contrasena" class="form-label">Contraseña</label>
+      <input id="contrasena" name="contrasena" type="password" class="form-control"/>
     </div>
-    <div>
-      <label for="rol">Rol:</label>
-      <select id="rol" name="idRol">
+
+    <div class="col-md-6">
+      <label for="rol" class="form-label">Rol</label>
+      <select id="rol" name="idRol" class="form-select">
         <option value="">-- Selecciona --</option>
         <% 
           List<Roles> roles = (List<Roles>)request.getAttribute("roles");
           for (Roles r : roles) { 
         %>
-          <option value="<%= r.getId_rol() %>">
-            <%= r.getNombre_rol() %>
-          </option>
+          <option value="<%= r.getId_rol() %>"><%= r.getNombre_rol() %></option>
         <% } %>
       </select>
     </div>
-    <div>
-      <label for="lote">Lote:</label>
-      <select id="lote" name="idLote" disabled>
+
+    <div class="col-md-6">
+      <label for="lote" class="form-label">Lote</label>
+      <select id="lote" name="idLote" class="form-select" disabled>
         <option value="">-- Selecciona --</option>
         <% 
           List<Lote> lotes = (List<Lote>)request.getAttribute("lotes");
           for (Lote l : lotes) { 
         %>
-          <option value="<%= l.getIdLote() %>">
-            <%= l.getNombreLote() %>
-          </option>
+          <option value="<%= l.getIdLote() %>"><%= l.getNombreLote() %></option>
         <% } %>
       </select>
     </div>
-    <div>
-      <label for="casa">Casa:</label>
-      <select id="casa" name="idCasa" disabled>
+
+    <div class="col-md-6">
+      <label for="casa" class="form-label">Casa</label>
+      <select id="casa" name="idCasa" class="form-select" disabled>
         <option value="">-- Selecciona --</option>
         <% 
           List<Casa> casas = (List<Casa>)request.getAttribute("casas");
           for (Casa c : casas) { 
         %>
-          <option value="<%= c.getIdCasa() %>">
-            <%= c.getNumeroCasa() %>
-          </option>
+          <option value="<%= c.getIdCasa() %>"><%= c.getNumeroCasa() %></option>
         <% } %>
       </select>
     </div>
-    <div>
-      <label for="activo">Activo:</label>
-      <input id="activo" name="activo" type="checkbox" checked/>
+
+    <div class="col-md-6 form-check">
+      <input id="activo" name="activo" type="checkbox" class="form-check-input" checked/>
+      <label for="activo" class="form-check-label">Activo</label>
     </div>
-    <div>
-      <button id="btnGuardar" type="submit" disabled>Guardar</button>
-      <button type="button" onclick="window.location='ListarUsuarios'"
-       style="background-color: #ccc; color: black; border: none; padding: 6px 12px; cursor: pointer;">
-        Cancelar
-      </button>
-      <button id="btnLimpiar" type="reset">Limpiar</button>
+
+    <div class="col-12 d-flex gap-2">
+      <button id="btnGuardar" type="submit" class="btn btn-success" disabled>Guardar</button>
+      <button type="button" onclick="window.location='ListarUsuarios'" class="btn btn-secondary">Cancelar</button>
+      <button id="btnLimpiar" type="reset" class="btn btn-warning">Limpiar</button>
     </div>
   </form>
+</div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const btn       = document.getElementById('btnGuardar');
-      const dpi       = document.getElementById('dpi');
-      const nombres   = document.getElementById('nombres');
-      const apellidos = document.getElementById('apellidos');
-      const correo    = document.getElementById('correo');
-      const contrasena= document.getElementById('contrasena');
-      const role      = document.getElementById('rol');
-      const lote      = document.getElementById('lote');
-      const casa      = document.getElementById('casa');
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn       = document.getElementById('btnGuardar');
+    const dpi       = document.getElementById('dpi');
+    const nombres   = document.getElementById('nombres');
+    const apellidos = document.getElementById('apellidos');
+    const correo    = document.getElementById('correo');
+    const contrasena= document.getElementById('contrasena');
+    const role      = document.getElementById('rol');
+    const lote      = document.getElementById('lote');
+    const casa      = document.getElementById('casa');
 
-      // Patrón de email (igual que en JavaFX)
-      const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-      function basicFieldsValid() {
-        return dpi.value.trim()       !== '' &&
-               nombres.value.trim()   !== '' &&
-               apellidos.value.trim() !== '' &&
-               correo.value.trim()    !== '' &&
-               contrasena.value       !== '' &&
-               role.value            !== '';
+    function basicFieldsValid() {
+      return dpi.value.trim()       !== '' &&
+             nombres.value.trim()   !== '' &&
+             apellidos.value.trim() !== '' &&
+             correo.value.trim()    !== '' &&
+             contrasena.value       !== '' &&
+             role.value            !== '';
+    }
+
+    function emailValid() {
+      const v = correo.value.trim();
+      return v === '' || emailPattern.test(v);
+    }
+
+    function passValid() {
+      const v = contrasena.value;
+      return v === '' || v.length >= 6;
+    }
+
+    function isSecurityAgent() {
+      const txt = role.options[role.selectedIndex].text.toLowerCase();
+      return txt.includes('seguridad');
+    }
+
+    function loteCasaValid() {
+      if (isSecurityAgent()) {
+        return true;
       }
+      return lote.value !== '' && casa.value !== '';
+    }
 
-      function emailValid() {
-        const v = correo.value.trim();
-        return v === '' || emailPattern.test(v);
-      }
+    function updateButton() {
+      const allValid = basicFieldsValid() && emailValid() && passValid() && loteCasaValid();
+      btn.disabled = !allValid;
+    }
 
-      function passValid() {
-        const v = contrasena.value;
-        return v === '' || v.length >= 6;
-      }
+    role.addEventListener('change', () => {
+      const block = isSecurityAgent();
+      lote.disabled = block;
+      casa.disabled = block;
+      updateButton();
+    });
 
-      function isSecurityAgent() {
-        const txt = role.options[role.selectedIndex].text.toLowerCase();
-        return txt.includes('seguridad');
-      }
+    [dpi, nombres, apellidos, correo, contrasena, role, lote, casa].forEach(el => {
+      el.addEventListener('input',  updateButton);
+      el.addEventListener('change', updateButton);
+    });
 
-      function loteCasaValid() {
-        if (isSecurityAgent()) {
-          return true;
-        }
-        return lote.value !== '' && casa.value !== '';
-      }
+    updateButton();
 
-      function updateButton() {
-        const allValid = basicFieldsValid() &&
-                         emailValid() &&
-                         passValid() &&
-                         loteCasaValid();
-        btn.disabled = !allValid;
-      }
-
-      // Al cambiar rol, habilitar/deshabilitar lote y casa
-      role.addEventListener('change', () => {
+    const form = document.getElementById('formCrearUsuario');
+    form.addEventListener('reset', () => {
+      setTimeout(() => {
         const block = isSecurityAgent();
         lote.disabled = block;
         casa.disabled = block;
         updateButton();
-      });
-
-      // Asociar validación a todos los inputs y selects
-      [dpi, nombres, apellidos, correo, contrasena, role, lote, casa]
-        .forEach(el => {
-          el.addEventListener('input',  updateButton);
-          el.addEventListener('change', updateButton);
-        });
-
-      // Validación inicial al cargar la página
-      updateButton();
-      
-      // Capturamos el form y, al resetearlo, volvemos a ajustar estados
-const form = document.getElementById('formCrearUsuario');
-form.addEventListener('reset', () => {
-  // Espera un tick para que HTML restablezca valores por defecto
-  setTimeout(() => {
-    // Reaplica bloqueo de lote/casa según rol (ya refresca updateButton)
-    const block = isSecurityAgent();
-    lote.disabled = block;
-    casa.disabled = block;
-    updateButton();
-  }, 0);
-});
-
+      }, 0);
     });
-  </script>
+  });
+</script>
 </body>
 </html>
+
 

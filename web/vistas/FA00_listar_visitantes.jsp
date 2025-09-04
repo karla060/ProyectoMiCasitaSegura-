@@ -22,6 +22,10 @@
         <a href="<%=ctx%>/VisitanteServlet?accion=nuevo" class="btn btn-success">
             Registro de visitantes
         </a>
+                        <!-- NUEVO BOTÓN: Menú principal -->
+            <a href="index.jsp" class="btn btn-primary ms-2">
+                Menú Principal
+            </a>
     </div>
 
     <table class="table table-bordered table-striped align-middle">
