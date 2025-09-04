@@ -9,8 +9,7 @@
  * and open the template in the editor.
  */
 
-
-    package ModeloDAO;
+package ModeloDAO;
 
 import Config.Conexion;
 import Modelo.Visitante;
@@ -21,15 +20,14 @@ import java.util.Date;
 import java.util.List;
 
 public class VisitanteDAO {
-
+   
+ 
     // Ya no mantenemos una conexión persistente
     private final Conexion cn = new Conexion();
-    private Connection con;
-        // Constructor: mantiene la conexión abierta mientras dure el DAO
-    public VisitanteDAO() {
-        this.con = new Conexion().getConnection();
-    }
-
+ 
+    
+    
+    
     // Listar todos los visitantes (últimos primero)
     public List<Visitante> listar() {
         List<Visitante> lista = new ArrayList<>();
@@ -146,7 +144,8 @@ public class VisitanteDAO {
     // Actualizar estado dentro
     public void actualizarEstado(int idVisitante, int dentro) {
         String sql = "UPDATE visitantes SET dentro=? WHERE id=?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = cn.getConnection();
+               PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, dentro);
             ps.setInt(2, idVisitante);
             ps.executeUpdate();
@@ -162,7 +161,8 @@ public class VisitanteDAO {
         String sql = "UPDATE visitantes " +
                      "SET intentos = COALESCE(intentos,0) - 1 " +
                      "WHERE id=? AND tipo_visita='Por intentos' AND COALESCE(intentos,0) > 0";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = cn.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idVisitante);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -171,35 +171,11 @@ public class VisitanteDAO {
     }
 
     
-    
-    
-    /*
-    // Restar intento si corresponde
-    public boolean restarIntentoSiCorresponde(int idVisitante) {
-        String sql = "UPDATE visitantes " +
-                     "SET intentos = intentos - 1 " +
-                     "WHERE id = ? AND tipo_visita LIKE 'Por intentos' AND intentos > 0";
-
-        try (Connection con = cn.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, idVisitante);
-            int filas = ps.executeUpdate();
-            System.out.println("[VisitanteDAO] Intentos restados (ID=" + idVisitante + "): " + filas);
-            return filas > 0;
-
-        } catch (SQLException e) {
-            System.err.println("[VisitanteDAO] Error al restar intento ID " + idVisitante + ": " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    } */
-
-    
     // Registrar auditoría
     public void registrarAuditoria(int idVisitante, String accion) {
         String sql = "INSERT INTO auditoria_visitantes (id_visitante, accion) VALUES (?, ?)";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = cn.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idVisitante);
             ps.setString(2, accion);
             ps.executeUpdate();
