@@ -60,13 +60,22 @@
 
             // Inicializa visibilidad según selección actual
             actualizarCampos();
+            const fecha = document.getElementById("fechaVisita");
+if (fecha) {
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    fecha.min = `${año}-${mes}-${dia}`;
+}
+
 
             // Si el tipo es “Visita”, limita fecha mínima a hoy
-            const fecha = document.getElementById("fechaVisita");
+            /*const fecha = document.getElementById("fechaVisita");
             if (fecha) {
                 const hoy = new Date().toISOString().split("T")[0];
                 fecha.min = hoy;
-            }
+            }*/
         });
     </script>
 </head>

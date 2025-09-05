@@ -164,6 +164,24 @@ private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData 
                 return;
             }
         } else if ("visita".equals(tipo) && v.getFechaVisita() != null) {
+    // Normalizar a yyyy-MM-dd para comparar solo fechas
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        String hoyStr = sdf.format(new java.util.Date());
+        String visitaStr = sdf.format(v.getFechaVisita());
+    
+        java.util.Date hoyDate = sdf.parse(hoyStr);
+        java.util.Date visitaDate = sdf.parse(visitaStr);
+
+        if (hoyDate.after(visitaDate)) {
+        res.success = false;
+        res.message = "Acceso denegado - fecha expirada";
+        System.out.println("[Visitante] Fecha expirada: ID " + v.getId() + " (hoy: " + hoyDate + ")");
+        return;
+        }
+    }
+
+        
+        /*else if ("visita".equals(tipo) && v.getFechaVisita() != null) {
             java.util.Date hoy = new java.util.Date();
             if (hoy.after(v.getFechaVisita())) {
                 res.success = false;
@@ -171,7 +189,7 @@ private void manejarAccesoVisitante(Visitante v, VisitanteDAO dao, ResponseData 
                 System.out.println("[Visitante] Fecha expirada: ID " + v.getId() + " (hoy: " + hoy + ")");
                 return;
             }
-        }
+        }*/
 
         // --- Restar intento solo al entrar ---
         if ("por intentos".equals(tipo)) {
