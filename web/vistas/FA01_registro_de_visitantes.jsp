@@ -31,7 +31,7 @@
             if (nombre !== "" && tipo !== "") {
                 if (tipo === "Visita" && fecha !== "") {
                     habilitar = true;
-                } else if (tipo === "Por intentos" && intentos !== "" && parseInt(intentos, 10) > 1) {
+                } else if (tipo === "Por intentos" && intentos !== "" && parseInt(intentos, 10) > 0) {
                     habilitar = true;
                 }
             }
@@ -111,7 +111,7 @@
 
         <div class="mb-3" id="grupoIntentos" style="display:none;">
             <label for="intentos">Intentos *</label>
-            <input type="number" name="intentos" id="intentos" class="form-control" min="2"
+            <input type="number" name="intentos" id="intentos" class="form-control" min="1"
                    value="<%= request.getParameter("intentos") != null ? request.getParameter("intentos") : "" %>"/>
         </div>
 
