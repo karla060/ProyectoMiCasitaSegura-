@@ -6,6 +6,7 @@
 package service;
 
 import Modelo.Visitante;
+import java.text.SimpleDateFormat;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.*;
@@ -140,5 +141,44 @@ private static String nvl(String s, String def) {
     return (s == null || s.isEmpty()) ? def : s;
 }
 
-      
+
+/**
+ * Envía solo texto de confirmación al residente,
+ * informándole que el código QR fue enviado al visitante.
+ */
+public void enviarConfirmacionResidente(Visitante v, String correoResidente)
+        throws MessagingException {
+    if (v == null) 
+        throw new IllegalArgumentException("Visitante es null");
+    if (correoResidente == null || correoResidente.isEmpty())
+        throw new IllegalArgumentException("Correo del residente vacío");
+
+    String asunto = "Notificación de accesos creados";
+    String cuerpo = String.format(
+    "El código QR fue generado exitosamente para la persona %s el día %s a las %s para acceder al condominio. "
+  + "Este código tiene una validez de %s. "
+  + "En caso de cualquier irregularidad, por favor contacte al administrador del sistema.",
+    nvl(v.getNombre(), "Visitante"),
+    new SimpleDateFormat("yyyy-MM-dd").format(new Date()),
+    new SimpleDateFormat("HH:mm:ss").format(new Date()),
+    ("Por intentos".equalsIgnoreCase(v.getTipoVisita()) && v.getIntentos() > 0)
+        ? v.getIntentos() + " intentos"
+        : new SimpleDateFormat("yyyy-MM-dd").format(v.getFechaVisita())
+);
+
+    // Crea y envía un correo simple (sin adjuntos)
+    MimeMessage msg = new MimeMessage(session);
+    msg.setFrom(new InternetAddress(remitente));
+    msg.setRecipients(
+        Message.RecipientType.TO,
+        InternetAddress.parse(correoResidente, false)
+    );
+    msg.setSubject(asunto, "UTF-8");
+    msg.setSentDate(new Date());
+    msg.setText(cuerpo, "UTF-8");
+
+    Transport.send(msg);
+}
+
+
 }

@@ -11,6 +11,7 @@ package Controlador;
  */
 
 
+import Modelo.Usuarios;
 import Modelo.Visitante;
 import ModeloDAO.VisitanteDAO;
 import util.QRUtils;
@@ -121,136 +122,145 @@ public class VisitanteServlet extends HttpServlet {
         }
     }
 
-    private void registrarVisitante(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
+   private void registrarVisitante(HttpServletRequest request,
+                                HttpServletResponse response)
+        throws ServletException, IOException {
+    // Asegura la codificación antes de leer parámetros
+    request.setCharacterEncoding("UTF-8");
 
-        // 1) Parámetros
-        String nombre = trim(request.getParameter("nombre"));
-        String dpi = trim(request.getParameter("dpi"));
-        String tipoVisita = trim(request.getParameter("tipoVisita")); // "Visita" | "Por intentos"
-        String correo = trim(request.getParameter("correo"));
+    // 1) Lectura de parámetros
+    String nombre     = trim(request.getParameter("nombre"));
+    String dpi        = trim(request.getParameter("dpi"));
+    String tipoVisita = trim(request.getParameter("tipoVisita"));
+    String correo     = trim(request.getParameter("correo"));
 
-        // Normaliza DPI: si permites espacios en el form, guárdalo sin espacios
-        if (dpi != null) dpi = dpi.replaceAll("\\s+", "");
+    // Normaliza DPI: elimina espacios
+    if (dpi != null) {
+        dpi = dpi.replaceAll("\\s+", "");
+    }
 
-        HttpSession session = request.getSession(false);
-        String residente = (session != null && session.getAttribute("usuarioNombre") != null)
-                ? String.valueOf(session.getAttribute("usuarioNombre"))
-                : "Residente";
-        String correoResidente = (session != null && session.getAttribute("usuarioCorreo") != null)
-                ? String.valueOf(session.getAttribute("usuarioCorreo"))
-                : null;
+    // 2) Validaciones de negocio
+    List<String> errores = new ArrayList<>();
+    if (nombre == null || nombre.isEmpty()) {
+        errores.add("Nombre del visitante es obligatorio.");
+    }
+    if (tipoVisita == null || tipoVisita.isEmpty()) {
+        errores.add("Tipo de visita es obligatorio.");
+    }
 
-        // 2) Validaciones de negocio
-        List<String> errores = new ArrayList<>();
-        if (nombre == null || nombre.isEmpty()) errores.add("Nombre del visitante es obligatorio.");
-        if (tipoVisita == null || tipoVisita.isEmpty()) errores.add("Tipo de visita es obligatorio.");
-
-        Integer intentos = null;
-        Date fechaVisita = null;
-
-        if ("Por intentos".equalsIgnoreCase(tipoVisita)) {
-            try {
-                intentos = Integer.parseInt(request.getParameter("intentos"));
-                if (intentos <= 0) errores.add("Intentos debe al menos 1.");
-            } catch (Exception e) {
-                errores.add("Intentos inválidos.");
-            }
-        } else if ("Visita".equalsIgnoreCase(tipoVisita)) {
-            String fechaStr = request.getParameter("fechaVisita");
-            try {
-                if (fechaStr == null || fechaStr.trim().isEmpty()) throw new ParseException("vacío", 0);
-                fechaVisita = new SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
-                if (soloFecha(fechaVisita).before(soloFecha(new Date()))) {
-                    errores.add("La fecha de visita no puede ser pasada.");
-                }
-            } catch (Exception e) {
-                errores.add("Fecha de visita inválida.");
-            }
-        }
-
-        if (!errores.isEmpty()) {
-            request.setAttribute("error", String.join(" ", errores));
-            request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp").forward(request, response);
-            return;
-        }
-
-        // 3) Construcción del modelo
-        Visitante visitante = new Visitante();
-        visitante.setNombre(nombre);
-        visitante.setDpi(dpi);
-        visitante.setTipoVisita(tipoVisita);
-        visitante.setCorreo(correo);
-        visitante.setResidente(residente);
-        visitante.setIntentos(intentos != null ? intentos : 0);
-        visitante.setFechaVisita(fechaVisita);
-
-        // 4) Persistencia + ID generado (manejo robusto)
-        int idGenerado;
+    Integer intentos  = null;
+    Date    fechaVisita = null;
+    if ("Por intentos".equalsIgnoreCase(tipoVisita)) {
         try {
-            idGenerado = dao.registrarYRetornarId(visitante); // Debe usar RETURN_GENERATED_KEYS y fallback a LAST_INSERT_ID() si es necesario
-        } catch (SQLException e) {
-            request.setAttribute("error", "No se pudo registrar: " + e.getMessage());
-            request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp").forward(request, response);
-            return;
-        } catch (Exception e) {
-            request.setAttribute("error", "Error inesperado al registrar: " + e.getMessage());
-            request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp").forward(request, response);
-            return;
+            intentos = Integer.parseInt(request.getParameter("intentos"));
+            if (intentos <= 0) {
+                errores.add("Intentos debe ser al menos 1.");
+            }
+        } catch (NumberFormatException e) {
+            errores.add("Intentos inválidos.");
         }
+    } else if ("Visita".equalsIgnoreCase(tipoVisita)) {
+        String fechaStr = request.getParameter("fechaVisita");
+        try {
+            if (fechaStr == null || fechaStr.trim().isEmpty()) {
+                throw new ParseException("vacío", 0);
+            }
+            fechaVisita = new SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
+            if (soloFecha(fechaVisita).before(soloFecha(new Date()))) {
+                errores.add("La fecha de visita no puede ser pasada.");
+            }
+        } catch (Exception e) {
+            errores.add("Fecha de visita inválida.");
+        }
+    }
 
+    if (!errores.isEmpty()) {
+        request.setAttribute("error", String.join(" ", errores));
+        request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp")
+               .forward(request, response);
+        return;
+    }
+
+    // 3) Construcción del modelo Visitante
+    Visitante visitante = new Visitante();
+    visitante.setNombre(nombre);
+    visitante.setDpi(dpi);
+    visitante.setTipoVisita(tipoVisita);
+    visitante.setCorreo(correo);
+    visitante.setIntentos(intentos != null ? intentos : 0);
+    visitante.setFechaVisita(fechaVisita);
+
+    // 4) Persistencia y captura de ID generado
+    try {
+        int idGenerado = dao.registrarYRetornarId(visitante);
         visitante.setId(idGenerado);
         if (visitante.getId() <= 0) {
-            request.setAttribute("error", "Registro creado, pero no se pudo obtener el ID generado.");
-            request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp").forward(request, response);
-            return;
+            throw new SQLException("No se obtuvo ID generado");
+        }
+    } catch (Exception e) {
+        request.setAttribute("error", "No se pudo registrar: " + e.getMessage());
+        request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp")
+               .forward(request, response);
+        return;
+    }
+
+    // 5) Recupera CORREO DEL RESIDENTE autenticado (una única vez)
+    HttpSession session = request.getSession(false);
+    String correoResidente = null;
+    if (session != null) {
+        Usuarios usuarioSes = (Usuarios) session.getAttribute("usuario");
+        if (usuarioSes != null) {
+            correoResidente = usuarioSes.getCorreo();
+        }
+    }
+
+    // 6) Generar QR y enviar correos
+    try {
+        byte[] qrBytes = QRUtils.generarBytes(visitante, 300, 300);
+       EmailService email = new EmailService( "smtp.gmail.com", "587", 
+               "patzanpirirjefferson4@gmail.com", 
+               "qsym rtfd subg bgee", true );
+        
+
+        // 6.1) Envía QR al visitante (si tiene correo)
+        if (visitante.getCorreo() != null && !visitante.getCorreo().isEmpty()) {
+            email.enviarQRVisitante(visitante, qrBytes);
         }
 
-       // 5) Generar QR y ENVIAR correo con EmailService existente
-try {
-    byte[] qrBytes = QRUtils.generarBytes(visitante, 300, 300);
+        // 6.2) Envía confirmación al residente (sin adjunto QR)
+        if (correoResidente != null && !correoResidente.isEmpty()) {
+            email.enviarConfirmacionResidente(visitante, correoResidente);
+        }
 
-    // Usa el mismo patrón “como antes” (no modificamos EmailService)
-    EmailService email = new EmailService(
-        "smtp.gmail.com", "587",
-        "patzanpirirjefferson4@gmail.com", "qsym rtfd subg bgee",
-        true // STARTTLS
-    );
+        request.setAttribute("visitanteCreado",
+            "Registro exitoso. El código QR fue enviado por correo.");
 
-    boolean envioHecho = false;
-    if (visitante.getCorreo() != null && !visitante.getCorreo().trim().isEmpty()) {
-        email.enviarQRVisitante(visitante, qrBytes);
-        envioHecho = true;
+    } catch (Exception e) {
+        request.setAttribute("error",
+            "Registro creado, pero falló el envío de correos: " + e.getMessage());
+        request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp")
+               .forward(request, response);
+        return;
     }
 
-    // Solo un mensaje: éxito de registro y, si aplica, confirmación de envío
-    if (envioHecho) {
-        request.setAttribute("visitanteCreado", "Registro exitoso. El código QR fue enviado por correo.");
-    } else {
-        request.setAttribute("visitanteCreado", "Registro exitoso. (No se envió correo porque no se proporcionó destinatario).");
-    }
-
-} catch (Exception e) {
-    // Registro ya creado; muestra SOLO el error de correo/QR y termina
-    request.setAttribute("error", "Registro creado, pero hubo un problema con QR/correos: " + e.getMessage());
-    request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp").forward(request, response);
-    return;
+    // 7) Forward final al JSP con mensaje de éxito
+    request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp")
+           .forward(request, response);
+}
+  
+// Método helper para truncar hora de Date
+private static Date soloFecha(Date d) {
+    Calendar c = Calendar.getInstance();
+    c.setTime(d);
+    c.set(Calendar.HOUR_OF_DAY, 0);
+    c.set(Calendar.MINUTE, 0);
+    c.set(Calendar.SECOND, 0);
+    c.set(Calendar.MILLISECOND, 0);
+    return c.getTime();
 }
 
-// 6) Éxito: queda un único mensaje en pantalla
-request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp").forward(request, response);
-
-    }
-
-    private static String trim(String s) { return s == null ? null : s.trim(); }
-
-    private static Date soloFecha(Date d) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(d);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        return c.getTime();
-    }
+// Método helper para trim seguro
+private static String trim(String s) {
+    return (s == null) ? null : s.trim();
+}
 }

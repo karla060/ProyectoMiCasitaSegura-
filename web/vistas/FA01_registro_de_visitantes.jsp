@@ -5,6 +5,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page import="Modelo.Usuarios" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -82,7 +83,7 @@ if (fecha) {
 <body class="p-4">
 <div class="container">
     <h3>Registro de Visitantes</h3>
-
+       
     <%-- Mensaje de error del servidor (si existe) --%>
     <% if (request.getAttribute("error") != null) { %>
         <div id="errorServidor" class="alert alert-danger"><%= request.getAttribute("error") %></div>

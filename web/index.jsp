@@ -39,8 +39,6 @@
 
     <%-- ADMINISTRADOR (idRol = 1) → acceso completo --%>
     <% if (idRol == 1) { %>
-      <a class="btn btn-success menu-btn"
-         href="<%= request.getContextPath() %>/VisitanteServlet?accion=listar">Registrar visitante</a>
       <a class="btn btn-primary menu-btn"
          href="<%= request.getContextPath() %>/ListarUsuarios">Mantenimiento de Usuarios</a>
       <a class="btn btn-info text-white menu-btn"
