@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
+//hola
 package Controlador;
 
 import Modelo.Usuarios;
@@ -32,7 +32,7 @@ public class EscanearQRControlador extends HttpServlet {
         // Lee el puerto desde init-param
         String puertoSerie = getServletConfig().getInitParameter("puertoSerie");
         if (puertoSerie == null || puertoSerie.isEmpty()) {
-            puertoSerie = "COM3";  // valor por defecto
+            puertoSerie = "COM11";  // valor por defecto
         }
 
         try {
