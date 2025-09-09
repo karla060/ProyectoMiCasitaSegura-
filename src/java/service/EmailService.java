@@ -181,4 +181,58 @@ public void enviarConfirmacionResidente(Visitante v, String correoResidente)
 }
 
 
+    /**
+ * Envía una notificación al residente informando que el código QR del visitante
+ * fue utilizado exitosamente para acceder.
+ *
+ * @param visitante      objeto Visitante utilizado
+ * @param correoResidente dirección de correo del residente
+ * @throws MessagingException si ocurre un error al enviar el correo
+ */
+public void enviarNotificacionUsoQR(Visitante visitante, String correoResidente) throws MessagingException {
+    if (visitante == null) 
+        throw new IllegalArgumentException("Visitante es null");
+    if (correoResidente == null || correoResidente.isEmpty())
+        throw new IllegalArgumentException("Correo del residente vacío");
+
+    String asunto = "Notificación de uso de código QR";
+    
+    // Fecha y hora actuales
+    String fecha = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+    String hora  = new SimpleDateFormat("HH:mm:ss").format(new Date());
+
+    // Determinar validez: por intentos o fecha
+    String validez;
+    if ("Por intentos".equalsIgnoreCase(visitante.getTipoVisita()) && visitante.getIntentos() != null) {
+        validez = visitante.getIntentos() + " intentos restantes";
+    } else if (visitante.getFechaVisita() != null) {
+        validez = "hasta " + new SimpleDateFormat("yyyy-MM-dd").format(visitante.getFechaVisita());
+    } else {
+        validez = "según indicaciones";
+    }
+
+    String cuerpo = String.format(
+        "El código QR generado para la persona %s fue utilizado exitosamente el día %s a las %s para acceder al condominio.\n" +
+        "Este código tiene una validez de %s.\n" +
+        "En caso de cualquier irregularidad, por favor contacte al administrador del sistema.",
+        nvl(visitante.getNombre(), "Visitante"),
+        fecha,
+        hora,
+        validez
+    );
+
+    // Crear mensaje simple (solo texto)
+    MimeMessage msg = new MimeMessage(session);
+    msg.setFrom(new InternetAddress(remitente));
+    msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(correoResidente, false));
+    msg.setSubject(asunto, "UTF-8");
+    msg.setSentDate(new Date());
+    msg.setText(cuerpo, "UTF-8");
+
+    Transport.send(msg);
+}
+
+
+
+
 }

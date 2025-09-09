@@ -122,6 +122,7 @@ public class VisitanteServlet extends HttpServlet {
         }
     }
 
+
    private void registrarVisitante(HttpServletRequest request,
                                 HttpServletResponse response)
         throws ServletException, IOException {
@@ -189,6 +190,20 @@ public class VisitanteServlet extends HttpServlet {
     visitante.setCorreo(correo);
     visitante.setIntentos(intentos != null ? intentos : 0);
     visitante.setFechaVisita(fechaVisita);
+    
+    // Recuperar correo del residente autenticado
+    HttpSession session = request.getSession(false);
+    String correoResidente = null;
+    if (session != null) {
+    Usuarios usuarioSes = (Usuarios) session.getAttribute("usuario");
+    if (usuarioSes != null) {
+        correoResidente = usuarioSes.getCorreo();
+    }
+}
+
+// Asignar el residente en el objeto Visitante
+visitante.setResidente(correoResidente);
+
 
     // 4) Persistencia y captura de ID generado
     try {
@@ -202,16 +217,6 @@ public class VisitanteServlet extends HttpServlet {
         request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp")
                .forward(request, response);
         return;
-    }
-
-    // 5) Recupera CORREO DEL RESIDENTE autenticado (una única vez)
-    HttpSession session = request.getSession(false);
-    String correoResidente = null;
-    if (session != null) {
-        Usuarios usuarioSes = (Usuarios) session.getAttribute("usuario");
-        if (usuarioSes != null) {
-            correoResidente = usuarioSes.getCorreo();
-        }
     }
 
     // 6) Generar QR y enviar correos
@@ -247,7 +252,9 @@ public class VisitanteServlet extends HttpServlet {
     request.getRequestDispatcher("/vistas/FA01_registro_de_visitantes.jsp")
            .forward(request, response);
 }
-  
+
+   
+   
 // Método helper para truncar hora de Date
 private static Date soloFecha(Date d) {
     Calendar c = Calendar.getInstance();
