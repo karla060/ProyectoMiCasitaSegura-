@@ -54,10 +54,18 @@
     <%-- RESIDENTE (idRol = 3) → registrar visitantes + escanear QR --%>
     <% if (idRol == 3) { %>
       <a class="btn btn-success menu-btn"
-         href="<%= request.getContextPath() %>/VisitanteServlet?accion=listar">Registrar visitante</a>
+         href="<%= request.getContextPath() %>/VisitanteServlet?accion=listar">registrar visitante</a>
       <a class="btn btn-info text-white menu-btn"
          href="<%= request.getContextPath() %>/EscanearQR">Escanear Código QR</a>
     <% } %>
+    
+ <%-- AGENTE y RESIDENTE → Directorio Residencial --%>
+    <% if (idRol == 2 || idRol == 3) { %>
+      <a class="btn btn-secondary menu-btn"
+         href="<%= request.getContextPath() %>/DirectorioResidencial">
+        Directorio Residencial
+      </a>
+    <% } %>  
 
     <!-- Logout -->
     <form action="<%= request.getContextPath() %>/Logout" method="post">

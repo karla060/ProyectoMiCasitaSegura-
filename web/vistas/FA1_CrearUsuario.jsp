@@ -38,12 +38,12 @@
   <form id="formCrearUsuario" action="CrearUsuario" method="post" class="row g-3">
 
     <div class="col-md-6">
-      <label for="dpi" class="form-label">DPI</label>
+      <label for="dpi" class="form-label">DPI del residente</label>
       <input id="dpi" name="dpi" type="text" class="form-control"/>
     </div>
 
     <div class="col-md-6">
-      <label for="nombres" class="form-label">Nombres</label>
+      <label for="nombres" class="form-label">nombre</label>
       <input id="nombres" name="nombres" type="text" class="form-control"/>
     </div>
 
@@ -63,7 +63,7 @@
     </div>
 
     <div class="col-md-6">
-      <label for="rol" class="form-label">Rol</label>
+      <label for="rol" class="form-label">Rol del usuario</label>
       <select id="rol" name="idRol" class="form-select">
         <option value="">-- Selecciona --</option>
         <% 
@@ -89,7 +89,7 @@
     </div>
 
     <div class="col-md-6">
-      <label for="casa" class="form-label">Casa</label>
+      <label for="casa" class="form-label">Numero de casa</label>
       <select id="casa" name="idCasa" class="form-select" disabled>
         <option value="">-- Selecciona --</option>
         <% 
@@ -107,7 +107,7 @@
     </div>
 
     <div class="col-12 d-flex gap-2">
-      <button id="btnGuardar" type="submit" class="btn btn-success" disabled>Guardar</button>
+      <button id="btnGuardar" type="submit" class="btn btn-success" disabled>Guardar usuario</button>
       <button type="button" onclick="window.location='ListarUsuarios'" class="btn btn-secondary">Cancelar</button>
       <button id="btnLimpiar" type="reset" class="btn btn-warning">Limpiar</button>
     </div>

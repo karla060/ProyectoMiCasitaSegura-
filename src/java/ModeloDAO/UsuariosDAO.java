@@ -180,4 +180,67 @@ public class UsuariosDAO {
 }
 
 
+    public List<Usuarios> buscarResidentes(String nombres,
+                                       String apellidos,
+                                       Integer idLote,
+                                       Integer idCasa) {
+    List<Usuarios> lista = new ArrayList<>();
+   StringBuilder sql = new StringBuilder(
+  "SELECT u.*, l.nombre_lote " +
+  "  FROM usuarios u " +
+  "  LEFT JOIN lotes l ON u.id_lote = l.id_lote " +
+  " WHERE u.id_rol = ? AND u.activo = TRUE"
+);
+if (nombres != null && !nombres.isEmpty())
+  sql.append(" AND LOWER(u.nombres)   LIKE ? ");
+if (apellidos != null && !apellidos.isEmpty())
+  sql.append(" AND LOWER(u.apellidos) LIKE ? ");
+if (idLote != null)
+  sql.append(" AND u.id_lote = ? ");
+if (idCasa != null)
+  sql.append(" AND u.id_casa = ? ");
+
+
+    try (PreparedStatement ps = con.prepareStatement(sql.toString())) {
+        int idx = 1;
+        ps.setInt(idx++, ID_ROL_RESIDENTE);
+        if (nombres != null && !nombres.isEmpty())
+            ps.setString(idx++, "%" + nombres.toLowerCase() + "%");
+        if (apellidos != null && !apellidos.isEmpty())
+            ps.setString(idx++, "%" + apellidos.toLowerCase() + "%");
+        if (idLote != null) ps.setInt(idx++, idLote);
+        if (idCasa != null) ps.setInt(idx++, idCasa);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                lista.add(mapRow(rs));
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error buscarResidentes: " + e.getMessage());
+    }
+    return lista;
+}
+
+private Usuarios mapRow(ResultSet rs) throws SQLException {
+    Usuarios u = new Usuarios();
+    u.setId(rs.getInt("id_usuario"));
+    u.setDpi(rs.getString("dpi"));
+    u.setNombres(rs.getString("nombres"));
+    u.setApellidos(rs.getString("apellidos"));
+    u.setCorreo(rs.getString("correo"));
+    u.setContrasena(rs.getString("contrasena"));
+    u.setIdRol(rs.getInt("id_rol"));
+    // sigue leyendo id_lote y id_casa
+    u.setIdLote(rs.getObject("id_lote") != null ? rs.getInt("id_lote") : null);
+    u.setIdCasa(rs.getObject("id_casa") != null ? rs.getInt("id_casa") : null);
+    // ahora solo traemos el nombre del lote
+    u.setNombreLote(rs.getString("nombre_lote"));
+    // si no tienes propiedad numeroCasa en tu POJO, quítalo
+    u.setActivo(rs.getBoolean("activo"));
+    u.setDentro(rs.getInt("dentro"));
+    return u;
+}
+
+
 }

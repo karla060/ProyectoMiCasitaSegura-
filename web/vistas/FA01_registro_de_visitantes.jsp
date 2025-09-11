@@ -126,7 +126,7 @@ if (fecha) {
         </div>
 
         <div class="mb-3">
-            <label for="correo">Correo del visitante</label>
+            <label for="correo">Correo visitante</label>
             <input type="email" name="correo" id="correo" class="form-control"
                    value="<%= request.getParameter("correo") != null ? request.getParameter("correo") : "" %>"/>
         </div>

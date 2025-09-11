@@ -40,7 +40,7 @@ public class EscanearQRControlador extends HttpServlet {
         // Lee el puerto desde init-param
         String puertoSerie = getServletConfig().getInitParameter("puertoSerie");
         if (puertoSerie == null || puertoSerie.isEmpty()) {
-            puertoSerie = "COM11";  // valor por defecto
+            puertoSerie = "COM3";  // valor por defecto
         }
 
         try {

@@ -21,7 +21,7 @@
         <div>
             <!-- Botón para crear nuevo usuario -->
             <form action="CrearUsuario" method="get" style="display:inline;">
-                <button type="submit" class="btn btn-success">Nuevo Usuario</button>
+                <button type="submit" class="btn btn-success">crear Usuario</button>
             </form>
 
             <!-- Botón: Regresar al menú principal -->
@@ -32,11 +32,11 @@
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-light">
         <tr>
-            <th>DPI</th>
-            <th>Nombres</th>
-            <th>Apellidos</th>
+            <th>DPI usuario</th>
+            <th>Nombre del usuario</th>
+            <th>Apellidos del Usuario</th>
             <th>Correo</th>
-            <th>Casa</th>
+            <th>Numero de casa</th>
             <th>Rol</th>
             <th style="width: 180px;">Acciones</th>
         </tr>
