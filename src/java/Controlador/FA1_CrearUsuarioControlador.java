@@ -6,6 +6,7 @@
 package Controlador;
 
 import Modelo.Usuarios;
+import ModeloDAO.AuditoriaSistemaDAO;
 import ModeloDAO.UsuariosDAO;
 import service.EmailService;
 import util.QRUtils;
@@ -13,12 +14,14 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
+import util.SesionHelper;
 
 @WebServlet("/CrearUsuario")
 public class FA1_CrearUsuarioControlador extends HttpServlet {
 
     private UsuariosDAO usuarioDAO;
     private EmailService emailService;
+    private AuditoriaSistemaDAO auditoriaDAO;
 
     
     @Override
@@ -30,6 +33,7 @@ public class FA1_CrearUsuarioControlador extends HttpServlet {
             "patzanpirirjefferson4@gmail.com", 
             "qsym rtfd subg bgee", true
         );
+         
     }
 
     @Override
@@ -92,6 +96,20 @@ public class FA1_CrearUsuarioControlador extends HttpServlet {
             return;
         }
 
+        // 🔹 Obtener admin en sesión
+        Usuarios admin = SesionHelper.getUsuarioLogueado(req);
+        String usuarioAccion = (admin != null)
+                ? admin.getNombres() + " " + admin.getApellidos()
+                : "Sistema";
+        // 🔹 Registrar en auditoría
+        new AuditoriaSistemaDAO().registrar(
+            usuarioAccion,
+            "Creación de usuario",
+            "Se creó el usuario: " + u.getNombres() + " " + u.getApellidos() +
+            " | DPI=" + u.getDpi() + " | Rol=" + u.getIdRol()
+        );    
+        
+        
         // 5) Generar QR y enviar correo si rol = RESIDENTE
         if (u.getIdRol() == UsuariosDAO.ID_ROL_RESIDENTE) {
             try {

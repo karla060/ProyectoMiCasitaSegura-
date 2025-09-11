@@ -13,6 +13,7 @@ package Controlador;
 
 import Modelo.Usuarios;
 import Modelo.Visitante;
+import ModeloDAO.AuditoriaSistemaDAO;
 import ModeloDAO.VisitanteDAO;
 import util.QRUtils;
 import service.EmailService;
@@ -26,6 +27,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.servlet.ServletOutputStream;
+import util.SesionHelper;
+
 
 @WebServlet(name = "VisitanteServlet", urlPatterns = {"/VisitanteServlet"})
 public class VisitanteServlet extends HttpServlet {
@@ -52,6 +55,53 @@ public class VisitanteServlet extends HttpServlet {
             case "cancelar": {
     String idStr = request.getParameter("id");
     boolean ok = false;
+
+    try {
+        int idCancelar = Integer.parseInt(idStr);
+
+        // 🔹 Obtener datos antes de eliminar
+        Visitante visitanteCancelado = dao.obtenerPorId(idCancelar);
+
+        // 🔹 Eliminar visitante
+        ok = dao.eliminar(idCancelar);
+
+        // 🔹 Registrar auditoría si la eliminación fue exitosa
+        if (ok && visitanteCancelado != null) {
+            Usuarios admin = SesionHelper.getUsuarioLogueado(request);
+            String usuarioAccion = (admin != null)
+                    ? admin.getNombres() + " " + admin.getApellidos()
+                    : "Sistema";
+
+            String detalle = "Se canceló la visita: " + visitanteCancelado.getNombre() +
+                             " | DPI=" + visitanteCancelado.getDpi() +
+                             " | Tipo de visita=" + visitanteCancelado.getTipoVisita() +
+                             (visitanteCancelado.getTipoVisita().equalsIgnoreCase("Por intentos")
+                                 ? " | Intentos=" + visitanteCancelado.getIntentos()
+                                 : " | Fecha de visita=" + new SimpleDateFormat("yyyy-MM-dd")
+                                     .format(visitanteCancelado.getFechaVisita())
+                             ) +
+                             (visitanteCancelado.getCorreo() != null
+                                 ? " | Correo=" + visitanteCancelado.getCorreo() : "") +
+                             (visitanteCancelado.getResidente() != null
+                                 ? " | Residente=" + visitanteCancelado.getResidente() : "");
+
+            new AuditoriaSistemaDAO().registrar(usuarioAccion, "Cancelación de visita", detalle);
+        }
+
+    } catch (NumberFormatException e) {
+        e.printStackTrace();
+    }
+
+    // Lleva un mensaje de estado (opcional)
+    String msg = ok ? "Registro cancelado." : "No se pudo cancelar (id inválido o no existe).";
+    response.sendRedirect(request.getContextPath() + "/VisitanteServlet?accion=listar&msg=" +
+                          java.net.URLEncoder.encode(msg, "UTF-8"));
+    break;
+}
+
+          /*  case "cancelar": {
+    String idStr = request.getParameter("id");
+    boolean ok = false;
     try {
         int idCancelar = Integer.parseInt(idStr);
         ok = dao.eliminar(idCancelar); // true si borró 1+
@@ -62,7 +112,7 @@ public class VisitanteServlet extends HttpServlet {
     String msg = ok ? "Registro cancelado." : "No se pudo cancelar (id inválido o no existe).";
     response.sendRedirect(request.getContextPath() + "/VisitanteServlet?accion=listar&msg=" + java.net.URLEncoder.encode(msg, "UTF-8"));
     break;
-}
+}*/
            /* case "descargarQR": {
                 // Si implementaste FA05, aquí iría la descarga (ya te dejé el case antes)
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "descargarQR no implementado aquí");
@@ -218,6 +268,31 @@ visitante.setResidente(correoResidente);
                .forward(request, response);
         return;
     }
+    
+    
+    
+    // 🔹 Obtener admin en sesión
+Usuarios admin = SesionHelper.getUsuarioLogueado(request);
+String usuarioAccion = (admin != null)
+        ? admin.getNombres() + " " + admin.getApellidos()
+        : "Sistema";
+
+// 🔹 Registrar en auditoría la creación del visitante
+new AuditoriaSistemaDAO().registrar(
+    usuarioAccion,
+    "Creación de visitante",
+    "Se registró el visitante: " + visitante.getNombre() +
+    " | DPI=" + visitante.getDpi() +
+    " | Tipo de visita=" + visitante.getTipoVisita() +
+    (visitante.getTipoVisita().equalsIgnoreCase("Por intentos")
+        ? " | Intentos=" + visitante.getIntentos()
+        : " | Fecha de visita=" + new SimpleDateFormat("yyyy-MM-dd").format(visitante.getFechaVisita())
+    ) +
+    (visitante.getCorreo() != null ? " | Correo=" + visitante.getCorreo() : "") +
+    (visitante.getResidente() != null ? " | Residente=" + visitante.getResidente() : "")
+);
+
+    
 
     // 6) Generar QR y enviar correos
     try {
@@ -253,7 +328,6 @@ visitante.setResidente(correoResidente);
            .forward(request, response);
 }
 
-   
    
 // Método helper para truncar hora de Date
 private static Date soloFecha(Date d) {
