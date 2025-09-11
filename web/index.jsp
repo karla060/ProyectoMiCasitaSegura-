@@ -26,6 +26,17 @@
     .card-menu { max-width: 500px; margin: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .card-menu h1 { font-size: 1.8rem; font-weight: bold; }
     .menu-btn { width: 100%; margin-bottom: 12px; padding: 12px; font-size: 1.1rem; border-radius: 8px; }
+    
+        /* 🎨 Estilo personalizado para el botón morado */
+    .btn-reservas {
+      background-color: #6f42c1; /* morado Bootstrap */
+      color: #fff;
+      border: none;
+    }
+    .btn-reservas:hover {
+      background-color: #563d7c; /* morado más oscuro */
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -57,7 +68,7 @@
          href="<%= request.getContextPath() %>/VisitanteServlet?accion=listar">registrar visitante</a>
       <a class="btn btn-info text-white menu-btn"
          href="<%= request.getContextPath() %>/EscanearQR">Escanear Código QR</a>
-      <a class="btn btn-info text-white menu-btn"
+      <a class="btn btn-reservas menu-btn"
          href="<%= request.getContextPath() %>/ReservaServlet">Gestionar reservas</a>
     <% } %>
     
