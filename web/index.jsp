@@ -57,6 +57,8 @@
          href="<%= request.getContextPath() %>/VisitanteServlet?accion=listar">Registrar visitante</a>
       <a class="btn btn-info text-white menu-btn"
          href="<%= request.getContextPath() %>/EscanearQR">Escanear Código QR</a>
+      <a class="btn btn-info text-white menu-btn"
+         href="<%= request.getContextPath() %>/ReservaServlet">Gestionar reservas</a>
     <% } %>
 
     <!-- Logout -->

@@ -29,6 +29,10 @@ public class LoginServlet extends HttpServlet {
         if (usuario != null && usuario.isActivo()) {
             HttpSession sesion = request.getSession();
             sesion.setAttribute("usuario", usuario);
+                // 👇 Guardamos también el nombre y correo en sesión
+    sesion.setAttribute("usuarioNombre", usuario.getNombres());
+    sesion.setAttribute("usuarioCorreo", usuario.getCorreo());
+            
             response.sendRedirect(request.getContextPath() + "/index.jsp");
         } else {
             request.setAttribute("error", "Usuario o contraseña incorrectos, o cuenta inactiva.");
@@ -45,5 +49,9 @@ public class LoginServlet extends HttpServlet {
         }
         return null;
     }
+    
+    
+    
+    
 }
    

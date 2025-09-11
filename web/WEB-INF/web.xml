@@ -88,6 +88,16 @@
     <url-pattern>/Login</url-pattern>
 </servlet-mapping>
 
+<!-- ReservaServlet -->
+<servlet>
+  <servlet-name>ReservaServlet</servlet-name>
+  <servlet-class>Controlador.ReservaServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+  <servlet-name>ReservaServlet</servlet-name>
+  <url-pattern>/ReservaServlet</url-pattern>
+</servlet-mapping>
+
 <!-- Index / Menú -->
 <servlet>
     <servlet-name>Index</servlet-name>

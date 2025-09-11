@@ -234,5 +234,21 @@ public void enviarNotificacionUsoQR(Visitante visitante, String correoResidente)
 
 
 
+public void enviarCorreo(String destino, String asunto, String cuerpo) throws MessagingException {
+    // 1) Crea el mensaje
+    MimeMessage msg = new MimeMessage(session);
+    msg.setFrom(new InternetAddress(remitente));
+    msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destino, false));
+    msg.setSubject(asunto, "UTF-8");
+    msg.setSentDate(new Date());
+
+    // 2) Texto simple
+    msg.setText(cuerpo, "UTF-8");
+
+    // 3) Enviar
+    Transport.send(msg);
+}
+
+
 
 }
