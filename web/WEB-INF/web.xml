@@ -107,5 +107,17 @@
     <servlet-name>Index</servlet-name>
     <url-pattern>/index.jsp</url-pattern>
 </servlet-mapping>
+
+<servlet>
+  <servlet-name>DirectorioServlet</servlet-name>
+  <servlet-class>Controlador.DirectorioServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+  <servlet-name>DirectorioServlet</servlet-name>
+  <url-pattern>/DirectorioResidencial</url-pattern>
+</servlet-mapping>
+
+
+
 </web-app>
 

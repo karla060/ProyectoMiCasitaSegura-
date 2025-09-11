@@ -50,12 +50,12 @@
   const canvas = document.createElement('canvas');
   const ctx    = canvas.getContext('2d');
 
-  // 1. Pide permiso de cámara y enlaza el video
+  
   navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
     .then(stream => { video.srcObject = stream; })
     .catch(err => { msg.textContent = 'Error al abrir cámara: ' + err; });
 
-  // 2. Bucle de escaneo
+ 
   video.addEventListener('play', () => {
     const tick = () => {
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -78,7 +78,7 @@
     requestAnimationFrame(tick);
   });
 
-  // 3. Envía el contenido al servlet vía POST
+  
   function enviarAlServidor(qrData) {
     msg.innerHTML = '<span class="text-info">QR detectado: ' + qrData + ' → Validando…</span>';
     fetch('EscanearQR', {
@@ -99,5 +99,4 @@
 </script>
 </body>
 </html>
-
 

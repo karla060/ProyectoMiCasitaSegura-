@@ -147,4 +147,3 @@ public class FA1_CrearUsuarioControlador extends HttpServlet {
         resp.sendRedirect("ListarUsuarios");
     }
 }
-

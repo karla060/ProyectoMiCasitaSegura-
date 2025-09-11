@@ -24,7 +24,15 @@ public class Usuarios {
     private boolean activo;
     private int dentro; // 0 = fuera, 1 = dentro
     
+ private String nombreLote;
 
+    public String getNombreLote() {
+        return nombreLote;
+    }
+
+    public void setNombreLote(String nombreLote) {
+        this.nombreLote = nombreLote;
+    }
 
     // Constructor vacío y getters/setters
     public Usuarios() {}
