@@ -46,12 +46,25 @@ public class VisitanteServlet extends HttpServlet {
                 break;
             }
             case "listar": {
-                // Carga lista y muestra tabla
-                List<Visitante> lista = dao.listar();
-                request.setAttribute("lista", lista);
-                request.getRequestDispatcher("/vistas/FA00_listar_visitantes.jsp").forward(request, response);
-                break;
-            }
+    HttpSession sesion = request.getSession(false);
+    Usuarios usuario = (Usuarios) (sesion != null ? sesion.getAttribute("usuario") : null);
+
+    List<Visitante> lista;
+
+    if (usuario != null && usuario.getIdRol() == 3) {  
+        // solo visitantes del residente
+        lista = dao.listarPorUsuario(usuario.getCorreo());
+    } else {
+        //Admin o seguridad → todos los visitantes
+        lista = dao.listar();
+    }
+
+     request.setAttribute("lista", lista);
+        request.getRequestDispatcher("/vistas/FA00_listar_visitantes.jsp").forward(request, response);
+        break;
+    }
+
+
             case "cancelar": {
     String idStr = request.getParameter("id");
     boolean ok = false;
@@ -99,28 +112,6 @@ public class VisitanteServlet extends HttpServlet {
     break;
 }
 
-          /*  case "cancelar": {
-    String idStr = request.getParameter("id");
-    boolean ok = false;
-    try {
-        int idCancelar = Integer.parseInt(idStr);
-        ok = dao.eliminar(idCancelar); // true si borró 1+
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    // Lleva un mensaje de estado (opcional)
-    String msg = ok ? "Registro cancelado." : "No se pudo cancelar (id inválido o no existe).";
-    response.sendRedirect(request.getContextPath() + "/VisitanteServlet?accion=listar&msg=" + java.net.URLEncoder.encode(msg, "UTF-8"));
-    break;
-}*/
-           /* case "descargarQR": {
-                // Si implementaste FA05, aquí iría la descarga (ya te dejé el case antes)
-                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "descargarQR no implementado aquí");
-                break;
-            }
-            default: {
-                response.sendRedirect(request.getContextPath() + "/VisitanteServlet?accion=listar");
-            }*/
             case "descargarQR": {
     try {
         int id = Integer.parseInt(request.getParameter("id"));

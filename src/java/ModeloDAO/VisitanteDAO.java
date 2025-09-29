@@ -29,7 +29,36 @@ public class VisitanteDAO {
         this.con = new Conexion().getConnection();
     }
 
-    // Listar todos los visitantes (últimos primero)
+    
+    // 🔹 Listar visitantes por correo del residente
+public List<Visitante> listarPorUsuario(String correoResidente) {
+    List<Visitante> lista = new ArrayList<>();
+    String sql = "SELECT id, nombre, dpi, tipo_visita, fecha_visita, intentos, correo, residente, qr_codigo, fecha_registro, dentro " +
+                 "FROM visitantes WHERE residente = ? ORDER BY id DESC";
+
+    try (Connection con = cn.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, correoResidente);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                lista.add(map(rs));
+            }
+        }
+
+    } catch (SQLException e) {
+        System.err.println("[VisitanteDAO] Error al listar por usuario: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    return lista;
+}
+
+
+    
+    
+   // Listar todos los visitantes (últimos primero)
     public List<Visitante> listar() {
         List<Visitante> lista = new ArrayList<>();
         String sql = "SELECT id, nombre, dpi, tipo_visita, fecha_visita, intentos, correo, residente, qr_codigo, fecha_registro, dentro " +

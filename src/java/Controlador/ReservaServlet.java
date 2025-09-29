@@ -57,6 +57,22 @@ public class ReservaServlet extends HttpServlet {
         }
     }
 
+    private void listarReservas(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    HttpSession sesion = request.getSession(false);
+    String correoUsuario = (String) sesion.getAttribute("usuarioCorreo"); // ya lo guardas al loguear
+
+    try (Connection con = conexion.getConnection()) {
+        ReservaDAO dao = new ReservaDAO(con);
+        List<Reserva> lista = dao.listarPorUsuario(correoUsuario);
+        request.setAttribute("reservas", lista);
+        request.getRequestDispatcher("vistas/gestionar_reservas.jsp").forward(request, response);
+    } catch (Exception e) {
+        throw new ServletException("Error al listar reservas", e);
+    }
+}
+
+    /*
     // 📌 Listar reservas
     private void listarReservas(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -69,7 +85,7 @@ public class ReservaServlet extends HttpServlet {
             throw new ServletException("Error al listar reservas", e);
         }
     }
-
+*/
 private void registrarReserva(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
     HttpSession sesion = request.getSession(false);

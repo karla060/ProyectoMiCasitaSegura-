@@ -16,7 +16,32 @@ public class ReservaDAO {
     public ReservaDAO(Connection con) {
         this.con = con;
     }
+    
+    public List<Reserva> listarPorUsuario(String correoUsuario) throws SQLException {
+    List<Reserva> lista = new ArrayList<>();
+    String sql = "SELECT * FROM reservas WHERE estado='activa' AND residente_correo = ?";
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, correoUsuario);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Reserva r = new Reserva();
+                r.setId(rs.getInt("id"));
+                r.setSalon(rs.getString("salon"));
+                r.setResidenteNombre(rs.getString("residente_nombre"));
+                r.setResidenteCorreo(rs.getString("residente_correo"));
+                r.setFecha(rs.getDate("fecha"));
+                r.setHoraInicio(rs.getTime("hora_inicio"));
+                r.setHoraFin(rs.getTime("hora_fin"));
+                r.setEstado(rs.getString("estado"));
+                lista.add(r);
+            }
+        }
+    }
+    return lista;
+}
 
+    
+/*
     public List<Reserva> listar() throws SQLException {
         List<Reserva> lista = new ArrayList<>();
         String sql = "SELECT * FROM reservas WHERE estado='activa'";
@@ -37,7 +62,7 @@ public class ReservaDAO {
         }
         return lista;
     }
-
+*/
     public int registrar(Reserva r) throws SQLException {
         String sql = "INSERT INTO reservas(salon, residente_nombre, residente_correo, fecha, hora_inicio, hora_fin, estado) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
