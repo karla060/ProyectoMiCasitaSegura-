@@ -3,14 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package ModeloDAO;
 
 import java.sql.SQLException;
 
-/**
- *
- * @author gp
- */
 import Config.Conexion;
 import Modelo.Usuarios;
 import java.sql.*;
@@ -21,7 +18,7 @@ public class UsuariosDAO {
 
     private Connection con;
 
-    /** ID de rol “Residente” en tu tabla roles */
+    // ID de rol “Residente” en tu tabla roles
     public static final int ID_ROL_RESIDENTE = 3;
 
     public UsuariosDAO() {
@@ -34,10 +31,6 @@ public class UsuariosDAO {
 }
     
     
-    /**
-     * Inserta un usuario y devuelve true si lo logra.
-     * Retorna false si algo falla.
-     */
     
     public boolean insertar(Usuarios usuario) {
         String sql = "INSERT INTO usuarios (dpi, nombres, apellidos, correo, contrasena, id_rol, id_lote, id_casa, activo) VALUES (?,?,?,?,?,?,?,?,?)";
@@ -81,9 +74,7 @@ public class UsuariosDAO {
         }
     }
 
-    /**
-     * Elimina el usuario cuyo id coincida con el pasado como parámetro.
-     */
+  
     public void eliminar(int idUsuario) {
         String sql = "DELETE FROM usuarios WHERE id_usuario = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -95,9 +86,7 @@ public class UsuariosDAO {
         }
     }
 
-    /**
-     * Retorna todos los usuarios.
-     */
+  
     public List<Usuarios> listar() {
         List<Usuarios> lista = new ArrayList<>();
         String sql = "SELECT * FROM usuarios";
@@ -125,9 +114,7 @@ public class UsuariosDAO {
         return lista;
     }
 
-    /**
-     * Busca un usuario por su ID (id_usuario).
-     */
+  
     public Usuarios buscarPorId(int id) {
         String sql = "SELECT * FROM usuarios WHERE id_usuario = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -179,7 +166,54 @@ public class UsuariosDAO {
     }
 }
 
+    
+    public List<Usuarios> buscarResidentes(String nombres,
+                                       String apellidos,
+                                       Integer idLote,
+                                       Integer idCasa) {
+    List<Usuarios> lista = new ArrayList<>();
+    StringBuilder sql = new StringBuilder(
+      "SELECT u.*, " +
+      "  (SELECT nombre FROM catalogos WHERE id = u.id_lote) AS nombre_lote, " +
+      "  (SELECT nombre FROM catalogos WHERE id = u.id_casa) AS numero_casa " +
+      "FROM usuarios u " +
+      "WHERE u.id_rol = ? AND u.activo = TRUE"
+    );
 
+    if (nombres != null && !nombres.isEmpty())
+        sql.append(" AND LOWER(u.nombres) LIKE ? ");
+    if (apellidos != null && !apellidos.isEmpty())
+        sql.append(" AND LOWER(u.apellidos) LIKE ? ");
+    if (idLote != null)
+        sql.append(" AND u.id_lote = ? ");
+    if (idCasa != null)
+        sql.append(" AND u.id_casa = ? ");
+
+    try (PreparedStatement ps = con.prepareStatement(sql.toString())) {
+        int idx = 1;
+        ps.setInt(idx++, ID_ROL_RESIDENTE);
+        if (nombres != null && !nombres.isEmpty())
+            ps.setString(idx++, "%" + nombres.toLowerCase() + "%");
+        if (apellidos != null && !apellidos.isEmpty())
+            ps.setString(idx++, "%" + apellidos.toLowerCase() + "%");
+        if (idLote != null)
+            ps.setInt(idx++, idLote);
+        if (idCasa != null)
+            ps.setInt(idx++, idCasa);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                lista.add(mapRow(rs));
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error buscarResidentes: " + e.getMessage());
+    }
+    return lista;
+}
+
+    
+/*
     public List<Usuarios> buscarResidentes(String nombres,
                                        String apellidos,
                                        Integer idLote,
@@ -221,7 +255,7 @@ if (idCasa != null)
     }
     return lista;
 }
-
+*/
 private Usuarios mapRow(ResultSet rs) throws SQLException {
     Usuarios u = new Usuarios();
     u.setId(rs.getInt("id_usuario"));
@@ -236,6 +270,7 @@ private Usuarios mapRow(ResultSet rs) throws SQLException {
     u.setIdCasa(rs.getObject("id_casa") != null ? rs.getInt("id_casa") : null);
     // ahora solo traemos el nombre del lote
     u.setNombreLote(rs.getString("nombre_lote"));
+     u.setNumeroCasa(rs.getString("numero_casa"));   // <-- agregar esta propiedad en POJO
     // si no tienes propiedad numeroCasa en tu POJO, quítalo
     u.setActivo(rs.getBoolean("activo"));
     u.setDentro(rs.getInt("dentro"));

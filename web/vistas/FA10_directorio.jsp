@@ -118,7 +118,7 @@
           <c:forEach var="u" items="${lista}">
             <tr>
               <td>${u.nombres} ${u.apellidos}</td>
-              <td>${u.nombreLote} - ${u.idCasa}</td>
+              <td>${u.nombreLote} - ${u.numeroCasa}</td>
               <td>${u.correo}</td>
             </tr>
           </c:forEach>

@@ -30,7 +30,7 @@ public class Usuarios {
     private Date fechaCreacion; // ya definido en tu clase
 
 
-
+private String numeroCasa;
  private String nombreLote;
 
     public String getNombreLote() {
@@ -148,7 +148,8 @@ public class Usuarios {
         this.dentro = dentro;
     }
    
-
+public String getNumeroCasa() { return numeroCasa; }
+public void setNumeroCasa(String numeroCasa) { this.numeroCasa = numeroCasa; }
 
 public Date getFechaCreacion() { return fechaCreacion; }
 public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }

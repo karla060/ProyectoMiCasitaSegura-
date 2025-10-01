@@ -5,6 +5,7 @@
  */
 package ModeloDAO;
 
+import Config.Conexion;
 import Modelo.Reserva;
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,6 +17,15 @@ public class ReservaDAO {
     public ReservaDAO(Connection con) {
         this.con = con;
     }
+ 
+    
+       // Constructor que abre conexión automáticamente
+    public ReservaDAO() {
+        Conexion conexion = new Conexion();
+        this.con = conexion.getConnection();
+    }
+
+    
     
     public List<Reserva> listarPorUsuario(String correoUsuario) throws SQLException {
     List<Reserva> lista = new ArrayList<>();
