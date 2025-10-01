@@ -70,7 +70,7 @@ public class EliminarUsuariosControlador extends HttpServlet {
             }
         }
 
-        // 🔹 Redirigir al listado con mensaje
+        //  Redirigir al listado con mensaje
         String msg = "Operación completada.";
         resp.sendRedirect("ListarUsuarios?msg=" + URLEncoder.encode(msg, "UTF-8"));
     }

@@ -5,6 +5,8 @@
  */
 package Modelo;
 
+import java.util.Date;
+
 /**
  *
  * @author gp
@@ -24,6 +26,11 @@ public class Usuarios {
     private boolean activo;
     private int dentro; // 0 = fuera, 1 = dentro
     
+    
+    private Date fechaCreacion; // ya definido en tu clase
+
+
+
  private String nombreLote;
 
     public String getNombreLote() {
@@ -141,5 +148,9 @@ public class Usuarios {
         this.dentro = dentro;
     }
    
+
+
+public Date getFechaCreacion() { return fechaCreacion; }
+public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 
 }

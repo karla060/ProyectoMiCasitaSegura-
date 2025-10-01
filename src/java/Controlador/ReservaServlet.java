@@ -110,18 +110,18 @@ private void registrarReserva(HttpServletRequest request, HttpServletResponse re
         Time horaInicio = Time.valueOf(horaInicioStr + ":00");
         Time horaFin = Time.valueOf(horaFinStr + ":00");
 
-        // 🚨 Normalizar fecha de hoy a solo yyyy-MM-dd (sin horas)
+        // Normalizar fecha de hoy a solo yyyy-MM-dd (sin horas)
         java.time.LocalDate hoyLocal = java.time.LocalDate.now();
         Date hoy = Date.valueOf(hoyLocal);
 
-        // 🚨 Validar fecha anterior
+        // Validar fecha anterior
         if (fecha.before(hoy)) {
             request.setAttribute("error", "No se puede reservar en una fecha anterior a hoy.");
             request.getRequestDispatcher("vistas/crear_reserva.jsp").forward(request, response);
             return;
         }
 
-        // 🚨 Validar hora fin mayor a hora inicio
+        // Validar hora fin mayor a hora inicio
         if (!horaFin.after(horaInicio)) {
             request.setAttribute("error", "La hora de fin debe ser posterior a la hora de inicio.");
             request.getRequestDispatcher("vistas/crear_reserva.jsp").forward(request, response);
@@ -181,7 +181,7 @@ private void registrarReserva(HttpServletRequest request, HttpServletResponse re
 
 
 
-    // 📌 Cancelar reserva
+    //  Cancelar reserva
     private void cancelarReserva(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String idStr = request.getParameter("id");

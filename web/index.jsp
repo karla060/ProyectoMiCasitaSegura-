@@ -70,6 +70,11 @@
          href="<%= request.getContextPath() %>/EscanearQR">Escanear Código QR</a>
       <a class="btn btn-reservas menu-btn"
          href="<%= request.getContextPath() %>/ReservaServlet">Gestionar reservas</a>
+        <a class="btn btn-warning menu-btn"
+   href="<%= request.getContextPath() %>/GestionarPagos"> Gestionar Pagos </a>
+
+
+
     <% } %>
     
  <%-- AGENTE y RESIDENTE → Directorio Residencial --%>

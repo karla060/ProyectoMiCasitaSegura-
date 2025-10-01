@@ -102,12 +102,13 @@ public class FA1_CrearUsuarioControlador extends HttpServlet {
                 ? admin.getNombres() + " " + admin.getApellidos()
                 : "Sistema";
         // 🔹 Registrar en auditoría
-        new AuditoriaSistemaDAO().registrar(
-            usuarioAccion,
-            "Creación de usuario",
-            "Se creó el usuario: " + u.getNombres() + " " + u.getApellidos() +
-            " | DPI=" + u.getDpi() + " | Rol=" + u.getIdRol()
-        );    
+       new AuditoriaSistemaDAO().registrar(
+        usuarioAccion,
+      "Creación de usuario",
+      "ID=" + u.getId() + " | " +
+      "Se creó el usuario: " + u.getNombres() + " " + u.getApellidos() +
+       " | DPI=" + u.getDpi() + " | Rol=" + u.getIdRol()
+);
         
         
         // 5) Generar QR y enviar correo si rol = RESIDENTE

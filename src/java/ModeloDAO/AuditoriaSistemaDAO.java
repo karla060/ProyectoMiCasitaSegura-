@@ -8,7 +8,9 @@ package ModeloDAO;
 import Config.Conexion;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 
 public class AuditoriaSistemaDAO {
     private final Conexion cn = new Conexion();
@@ -27,6 +29,30 @@ public class AuditoriaSistemaDAO {
             return false;
         }
     }
+    
+    public Date obtenerFechaCreacionUsuarioPorId(int idUsuario) {
+    Date fechaCreacion = null;
+    String sql = "SELECT fecha FROM auditoria_sistema " +
+                 "WHERE accion = 'Creación de usuario' " +
+                 "AND detalle LIKE ? " +
+                 "ORDER BY fecha ASC LIMIT 1";
+
+    try (Connection con = cn.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, "ID=" + idUsuario + "%"); // buscamos el ID al inicio del detalle
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                fechaCreacion = rs.getTimestamp("fecha");
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("[AuditoriaSistemaDAO] Error al obtener fecha creación: " + e.getMessage());
+    }
+    return fechaCreacion;
+}
+
+    
+    
 }
 
 

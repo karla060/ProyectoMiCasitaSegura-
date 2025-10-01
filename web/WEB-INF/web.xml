@@ -1,123 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app 
-    xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
-        http://xmlns.jcp.org/xml/ns/javaee 
-        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-    version="3.1"
-    metadata-complete="true">
-    >
-    
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
 
     <display-name>MiAppWeb</display-name>
 
-    <!-- Página de bienvenida -->
+    <!-- Página de inicio -->
     <welcome-file-list>
         <welcome-file>vistas/login.jsp</welcome-file>
     </welcome-file-list>
 
-
-    <!-- Listar Usuarios -->
-    <servlet>
-        <servlet-name>ListarUsuariosControlador</servlet-name>
-        <servlet-class>Controlador.ListarUsuariosControlador</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ListarUsuariosControlador</servlet-name>
-        <url-pattern>/ListarUsuarios</url-pattern>
-    </servlet-mapping>
-
-    <!-- Crear Usuario -->
-    <servlet>
-        <servlet-name>FA1_CrearUsuarioControlador</servlet-name>
-        <servlet-class>Controlador.FA1_CrearUsuarioControlador</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>FA1_CrearUsuarioControlador</servlet-name>
-        <url-pattern>/CrearUsuario</url-pattern>
-    </servlet-mapping>
-
-    <!-- Eliminar Usuario -->
-    <servlet>
-        <servlet-name>EliminarUsuariosControlador</servlet-name>
-        <servlet-class>Controlador.EliminarUsuariosControlador</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>EliminarUsuariosControlador</servlet-name>
-        <url-pattern>/EliminarUsuario</url-pattern>
-    </servlet-mapping>
-
-    <!-- Escanear QR -->
-    <servlet>
-        <servlet-name>EscanearQRControlador</servlet-name>
-        <servlet-class>Controlador.EscanearQRControlador</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>EscanearQRControlador</servlet-name>
-        <url-pattern>/EscanearQR</url-pattern>
-    </servlet-mapping>
-
-    <!-- Registro de Visitantes -->
-    <servlet>
-       <servlet-name>VisitanteServlet</servlet-name>
-        <servlet-class>Controlador.VisitanteServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>VisitanteServlet</servlet-name>
-  <url-pattern>/VisitanteServlet</url-pattern>
-    </servlet-mapping>
-
-<!-- Logout -->
-<servlet>
-    <servlet-name>LogoutServlet</servlet-name>
-    <servlet-class>Controlador.LogoutServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>LogoutServlet</servlet-name>
-    <url-pattern>/Logout</url-pattern>
-</servlet-mapping>
-
-    <!-- Login -->
-<servlet>
-    <servlet-name>LoginServlet</servlet-name>
-    <servlet-class>Controlador.LoginServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>LoginServlet</servlet-name>
-    <url-pattern>/Login</url-pattern>
-</servlet-mapping>
-
-<!-- ReservaServlet -->
-<servlet>
-  <servlet-name>ReservaServlet</servlet-name>
-  <servlet-class>Controlador.ReservaServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-  <servlet-name>ReservaServlet</servlet-name>
-  <url-pattern>/ReservaServlet</url-pattern>
-</servlet-mapping>
-
-<!-- Index / Menú -->
-<servlet>
-    <servlet-name>Index</servlet-name>
-    <jsp-file>/index.jsp</jsp-file>
-</servlet>
-<servlet-mapping>
-    <servlet-name>Index</servlet-name>
-    <url-pattern>/index.jsp</url-pattern>
-</servlet-mapping>
-
-<servlet>
-  <servlet-name>DirectorioServlet</servlet-name>
-  <servlet-class>Controlador.DirectorioServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-  <servlet-name>DirectorioServlet</servlet-name>
-  <url-pattern>/DirectorioResidencial</url-pattern>
-</servlet-mapping>
-
-
-
 </web-app>
+
 
