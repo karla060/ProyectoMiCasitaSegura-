@@ -13,12 +13,15 @@ import javax.mail.*;
 import javax.mail.internet.*;
 import javax.mail.util.ByteArrayDataSource;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 public class EmailService {
     private final Session session;
     private final String remitente;
 
+    private static Session session1;
+    private static String remitente1;
     /**
      * @param host servidor SMTP (p.ej. "smtp.gmail.com")
      * @param port puerto SMTP (p.ej. "587")
@@ -248,6 +251,24 @@ public void enviarCorreo(String destino, String asunto, String cuerpo) throws Me
     // 3) Enviar
     Transport.send(msg);
 }
+
+
+    public void enviarCorreoAdmins(List<String> destinatarios, String asunto, String cuerpo) {
+    if (destinatarios == null || destinatarios.isEmpty()) return;
+
+    for (String correo : destinatarios) {
+        try {
+            // Usa el método simple que ya tienes
+            enviarCorreo(correo, asunto, cuerpo);
+            System.out.println("Correo enviado a " + correo);
+        } catch (MessagingException e) {
+            System.err.println("Error enviando correo a " + correo + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+
 
 
 

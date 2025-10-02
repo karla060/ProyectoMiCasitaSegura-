@@ -29,6 +29,7 @@ public class LoginServlet extends HttpServlet {
         if (usuario != null && usuario.isActivo()) {
             HttpSession sesion = request.getSession();
             sesion.setAttribute("usuario", usuario);
+            sesion.setAttribute("usuarioId", usuario.getId());  // <-- agregado
                 //  Guardamos también el nombre y correo en sesión
     sesion.setAttribute("usuarioNombre", usuario.getNombres());
     sesion.setAttribute("usuarioCorreo", usuario.getCorreo());

@@ -278,4 +278,18 @@ private Usuarios mapRow(ResultSet rs) throws SQLException {
 }
 
 
+       public List<String> obtenerCorreosAdmins() throws Exception {
+        List<String> correos = new ArrayList<>();
+        String sql = "SELECT correo FROM usuarios WHERE id_rol = 1 AND activo = 1";
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                correos.add(rs.getString("correo"));
+            }
+        }
+        return correos;
+    }
+
+
+
 }

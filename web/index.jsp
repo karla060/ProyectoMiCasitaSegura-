@@ -73,7 +73,9 @@
         <a class="btn btn-warning menu-btn"
    href="<%= request.getContextPath() %>/GestionarPagos"> Gestionar Pagos </a>
 
-
+    <%-- Nuevo botón para reportes de mantenimiento --%>
+    <a class="btn btn-danger menu-btn"
+       href="<%= request.getContextPath() %>/ReporteMantenimientoServlet">Reportes de Mantenimiento</a>
 
     <% } %>
     
