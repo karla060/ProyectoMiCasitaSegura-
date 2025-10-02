@@ -22,6 +22,8 @@
     String mesAPagarStr = (String) request.getAttribute("mesAPagarStr");
     Double cantidad = (Double) request.getAttribute("cantidad");
     java.util.Date fechaLimite = (java.util.Date) request.getAttribute("fechaLimite");
+
+    String success = request.getParameter("success");
 %>
 
 <!DOCTYPE html>
@@ -33,12 +35,59 @@
 </head>
 <body>
 <div class="container py-5">
-    <h1>Pagar Servicio - <%= usuario.getNombres() %></h1>
+
+    <%-- Mensajes de error enviados desde el servlet --%>
+<%
+    String mensajeError = (String) request.getAttribute("mensajeError");
+    String mensaje = (String) request.getAttribute("mensaje");
+    if (mensajeError != null) {
+%>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+     <%= mensajeError %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+</div>
+<% } else if (mensaje != null) { %>
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <%= mensaje %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+</div>
+<% } %>
+
+    
+    
+    <% if("1".equals(success)) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+         Pago realizado con éxito
+        <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="redirigirCheck">
+            <label class="form-check-label" for="redirigirCheck">
+                Ir a Gestionar Pagos
+            </label>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const check = document.getElementById("redirigirCheck");
+            if(check){
+                check.addEventListener("change", () => {
+                    if(check.checked){
+                        window.location.href = "<%= request.getContextPath() %>/GestionarPagos";
+                    }
+                });
+            }
+        });
+    </script>
+    <% } %>
+
+    <h1>Pagos de Servicios - <%= usuario.getNombres() %></h1>
 
     <form method="post" action="PagoServlet" id="formPago">
+
+        <!-- Selección de tipo de pago -->
         <div class="mb-3">
             <label>Tipo de pago *</label>
-            <select name="tipoPago" id="tipoPago" class="form-control" required onchange="actualizarTotal()">
+            <select name="tipoPago" id="tipoPago" class="form-control" required>
                 <option value="">Seleccione...</option>
                 <option value="Mantenimiento">Mantenimiento</option>
                 <option value="Multa">Multa</option>
@@ -46,60 +95,104 @@
             </select>
         </div>
 
+        <!-- Botón Consultar -->
         <div class="mb-3">
-            <label>Mes a pagar</label>
-            <input type="text" id="mesAPagar" class="form-control" value="<%= mesAPagarStr %>" readonly>
+            <button type="button" class="btn btn-primary" id="btnConsultar" disabled>Consultar</button>
         </div>
 
+        <!-- Campos que aparecen después de consultar -->
+        <div id="camposPago" style="display:none;">
+
+           <!-- Mes a pagar (visible solo lectura) -->
         <div class="mb-3">
-            <label>Mora (Q.)</label>
-            <input type="text" id="mora" class="form-control" value="0.00" readonly>
+        <label>Mes a pagar</label>
+            <input type="text" id="mesAPagar" class="form-control" value="<%= mesAPagarStr != null ? mesAPagarStr : "" %>" readonly>
+              <!-- Hidden que envía la fecha real al servlet -->
+            <input type="hidden" name="mesAPagar" id="mesAPagarHidden" value="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(fechaLimite) %>">
         </div>
 
-        <div class="mb-3">
-            <label>Total (Q.)</label>
-            <input type="text" id="total" class="form-control" value="0.00" readonly>
+            <div class="mb-3">
+                <label>Mora (Q.)</label>
+                <input type="text" id="mora" class="form-control" value="0.00" readonly>
+            </div>
+
+            <div class="mb-3">
+                <label>Total (Q.)</label>
+                <input type="text" id="total" class="form-control" value="0.00" readonly>
+            </div>
+
+            <input type="hidden" name="mora" id="moraHidden" value="0.00">
+            <input type="hidden" name="total" id="totalHidden" value="0.00">
+
+            <div class="mb-3">
+                <label>Observaciones *</label>
+                <input type="text" name="observaciones" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Número de tarjeta *</label>
+                <input type="text" name="numeroTarjeta" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Fecha vencimiento *</label>
+                <input type="date" name="fechaVencimiento" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>CVV *</label>
+                <input type="text" name="cvv" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Nombre Titular *</label>
+                <input type="text" name="nombreTitular" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success" id="btnRegistrar" disabled>Registrar Pago</button>
+
         </div>
 
-        <div class="mb-3">
-            <label>Observaciones *</label>
-            <input type="text" name="observaciones" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>Número de tarjeta *</label>
-            <input type="text" name="numeroTarjeta" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>Fecha vencimiento *</label>
-            <input type="date" name="fechaVencimiento" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>CVV *</label>
-            <input type="text" name="cvv" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>Nombre Titular *</label>
-            <input type="text" name="nombreTitular" class="form-control" required>
-        </div>
-
-        <button type="submit" class="btn btn-success" id="btnRegistrar" disabled>Registrar Pago</button>
         <button type="button" class="btn btn-secondary" onclick="limpiarCampos()">Limpiar</button>
         <a href="<%= request.getContextPath() %>/GestionarPagos" class="btn btn-warning">Volver</a>
 
     </form>
 </div>
-
 <script>
+const tipoPagoSelect = document.getElementById("tipoPago");
+const btnConsultar = document.getElementById("btnConsultar");
+const camposPago = document.getElementById("camposPago");
 const cantidadBase = <%= cantidad %>;
 const fechaLimite = new Date("<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(fechaLimite) %>");
 
+// Habilitar botón Consultar cuando se selecciona tipo de pago
+tipoPagoSelect.addEventListener("change", () => {
+    btnConsultar.disabled = tipoPagoSelect.value === "";
+});
+
+// Acción botón Consultar
+btnConsultar.addEventListener("click", () => {
+    const tipo = tipoPagoSelect.value;
+    window.location.href = "PagoServlet?tipoPago=" + encodeURIComponent(tipo);
+});
+
+// Mostrar campos después de consultar
+<% if (request.getAttribute("tipoPago") != null && request.getAttribute("cantidad") != null) { %>
+document.addEventListener("DOMContentLoaded", () => {
+    camposPago.style.display = "block";
+    const tipoPago = "<%= request.getAttribute("tipoPago") %>";
+    if(tipoPago){
+        tipoPagoSelect.value = tipoPago;
+    }
+    actualizarTotal(); // recalcular mora y total
+});
+<% } %>
+
+// Calcula mora y total
 function actualizarTotal() {
-    const tipo = document.getElementById("tipoPago").value;
+    const tipo = tipoPagoSelect.value;
     let mora = 0;
+
     if(tipo === "Mantenimiento") {
         const hoy = new Date();
         if(hoy > fechaLimite) {
@@ -108,7 +201,9 @@ function actualizarTotal() {
             mora = diasRetraso * 25;
         }
     }
+
     document.getElementById("mora").value = mora.toFixed(2);
+    document.getElementById("moraHidden").value = mora.toFixed(2);
 
     let total = 0;
     switch(tipo){
@@ -117,12 +212,16 @@ function actualizarTotal() {
         case "Reinstalación de servicios": total = 750; break;
     }
     total += mora;
+
     document.getElementById("total").value = total.toFixed(2);
+    document.getElementById("totalHidden").value = total.toFixed(2);
+
     habilitarBoton();
 }
 
+// Habilita botón registrar si todos los campos requeridos están completos
 function habilitarBoton() {
-    const tipoPago = document.getElementById("tipoPago").value;
+    const tipoPago = tipoPagoSelect.value;
     const observaciones = document.querySelector("input[name='observaciones']").value;
     const numTarjeta = document.querySelector("input[name='numeroTarjeta']").value;
     const fechaVenc = document.querySelector("input[name='fechaVencimiento']").value;
@@ -133,18 +232,35 @@ function habilitarBoton() {
     btn.disabled = !(tipoPago && observaciones && numTarjeta && fechaVenc && cvv && nombreTitular);
 }
 
+// Limpiar formulario
 function limpiarCampos() {
     document.getElementById("formPago").reset();
+    camposPago.style.display = "none";
     document.getElementById("mora").value = "0.00";
     document.getElementById("total").value = "0.00";
+    document.getElementById("moraHidden").value = "0.00";
+    document.getElementById("totalHidden").value = "0.00";
     document.getElementById("btnRegistrar").disabled = true;
 }
 
-// ✅ Se agregan listeners globales a todos los campos del formulario
+// Copiar valores visibles a hidden antes de enviar y habilitar botón al escribir
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("#formPago input, #formPago select")
+    // Actualizar hidden con mes a pagar si ya viene del servlet
+    const mesTexto = document.getElementById("mesAPagarHidden").value;
+    document.getElementById("mesAPagarHidden").value = mesTexto;
+
+    // Escuchar cambios en inputs requeridos
+    document.querySelectorAll("#formPago input[required], #formPago select[required]")
         .forEach(el => el.addEventListener("input", habilitarBoton));
+
+    // Antes de enviar, aseguramos que hidden tenga valores correctos
+    document.getElementById("formPago").addEventListener("submit", () => {
+        document.getElementById("mesAPagarHidden").value = document.getElementById("mesAPagarHidden").value;
+        document.getElementById("moraHidden").value = document.getElementById("mora").value;
+        document.getElementById("totalHidden").value = document.getElementById("total").value;
+    });
 });
 </script>
+
 </body>
 </html>

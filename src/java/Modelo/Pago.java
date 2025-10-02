@@ -25,6 +25,10 @@ public class Pago {
     private double mora;
     private double total;  
 
+    private Date mesPagado;
+
+    
+    
     public Pago() {
     }
 
@@ -138,8 +142,16 @@ public class Pago {
     public void setTotal(double total) {
         this.total = total;
     }
+
+    public Date getMesPagado() {
+        return mesPagado;
+    }
+
+    public void setMesPagado(Date mesPagado) {
+        this.mesPagado = mesPagado;
+    }
     
-    
+   
     
     
 }
