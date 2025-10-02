@@ -48,12 +48,8 @@
                 <td>${u.nombres}</td>
                 <td>${u.apellidos}</td>
                 <td>${u.correo}</td>
-                <td>
-                    <c:choose>
-                        <c:when test="${not empty u.idCasa}">${u.idCasa}</c:when>
-                        <c:otherwise>-</c:otherwise>
-                    </c:choose>
-                </td>
+                <td>${casasMap[u.idCasa]}</td>
+
                 <td>${rolesMap[u.idRol]}</td>
                 <td>
                     <form action="EliminarUsuario" method="post" style="display:inline;"

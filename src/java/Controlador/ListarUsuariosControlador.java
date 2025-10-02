@@ -7,6 +7,7 @@ package Controlador;
 
 import Modelo.Usuarios;
 import ModeloDAO.AuditoriaSistemaDAO;
+import ModeloDAO.CasaDAO;
 import ModeloDAO.RolesDAO;
 import ModeloDAO.UsuariosDAO;
 
@@ -45,6 +46,16 @@ public class ListarUsuariosControlador extends HttpServlet {
                 rolesMap.put(r.getId_rol(), r.getNombre_rol())
             );
 
+            CasaDAO casaDAO = new CasaDAO();
+            Map<Integer, String> casasMap = new HashMap<>();
+            casaDAO.listar().forEach(c ->
+             casasMap.put(c.getIdCasa(), String.valueOf(c.getNumeroCasa()))
+            );
+
+            req.setAttribute("casasMap", casasMap);
+
+            
+            
             // 3) Pasa como atributos de request
             req.setAttribute("usuarios", usuarios);
             req.setAttribute("rolesMap", rolesMap);
