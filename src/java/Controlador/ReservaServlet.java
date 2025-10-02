@@ -64,6 +64,9 @@ public class ReservaServlet extends HttpServlet {
 
     try (Connection con = conexion.getConnection()) {
         ReservaDAO dao = new ReservaDAO(con);
+        //Cancela automáticamente las vencidas
+        dao.cancelarReservasVencidas();
+        
         List<Reserva> lista = dao.listarPorUsuario(correoUsuario);
         request.setAttribute("reservas", lista);
         request.getRequestDispatcher("vistas/gestionar_reservas.jsp").forward(request, response);

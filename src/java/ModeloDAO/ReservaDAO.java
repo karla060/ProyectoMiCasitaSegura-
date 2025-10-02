@@ -125,5 +125,17 @@ public class ReservaDAO {
         }
         return false;
     }
+    
+    
+    public int cancelarReservasVencidas() throws SQLException {
+    String sql = "UPDATE reservas " +
+                 "SET estado = 'cancelada' " +
+                 "WHERE estado = 'activa' " +
+                 "AND (fecha < CURDATE() OR (fecha = CURDATE() AND hora_fin < CURTIME()))";
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        return ps.executeUpdate(); // devuelve cuántas filas se actualizaron
+    }
+}
+    
 }
 
