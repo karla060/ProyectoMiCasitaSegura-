@@ -12,6 +12,7 @@ package ModeloDAO;
 import Modelo.Pago;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class PagoDAO {
@@ -128,21 +129,59 @@ public class PagoDAO {
 
 
     
-    
-   public boolean necesitaReinstalacion(int idUsuario) throws SQLException {
-    String sql = "SELECT COUNT(*) FROM pagos " +
-                 "WHERE id_usuario = ? AND tipo_pago = 'Mantenimiento' " +
-                 "AND mes_pagado < CURDATE()"; 
-    try (PreparedStatement ps = con.prepareStatement(sql)) {
-        ps.setInt(1, idUsuario);
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1) >= 2; // Reinstalación si hay 2 o más pagos atrasados
+  public boolean necesitaReinstalacion(int idUsuario) throws SQLException {
+    // Obtener la fecha de creación del usuario
+    AuditoriaSistemaDAO auditoriaDAO = new AuditoriaSistemaDAO();
+    java.util.Date fechaCreacion = auditoriaDAO.obtenerFechaCreacionUsuarioPorId(idUsuario);
+    if (fechaCreacion == null) {
+        // No se encontró fecha de creación, asumimos que no requiere reinstalación
+        return false;
+    }
+
+    Calendar inicio = Calendar.getInstance();
+    inicio.setTime(fechaCreacion);
+
+    Calendar hoy = Calendar.getInstance(); // fecha actual
+
+    // Contador de meses atrasados
+    int mesesAtrasados = 0;
+
+    try (Connection con = this.con) {
+        String sql = "SELECT mes_pagado FROM pagos " +
+                     "WHERE id_usuario = ? AND tipo_pago = 'Mantenimiento' " +
+                     "ORDER BY mes_pagado ASC";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<java.util.Date> pagos = new ArrayList<>();
+                while (rs.next()) {
+                    pagos.add(rs.getDate("mes_pagado"));
+                }
+
+                // Recorrer mes por mes desde la creación hasta hoy
+                Calendar mesActual = (Calendar) inicio.clone();
+                int i = 0;
+                while (mesActual.before(hoy)) {
+                    java.util.Date mesPagado = (i < pagos.size()) ? pagos.get(i) : null;
+                    if (mesPagado == null || mesPagado.before(mesActual.getTime())) {
+                        // Si no hay pago para ese mes o se pagó después → contar como atraso
+                        mesesAtrasados++;
+                    }
+                    mesActual.add(Calendar.MONTH, 1);
+                    i++;
+                }
             }
         }
     }
-    return false;
+
+    // Retornar true si hay 3 o más meses de mantenimiento atrasados
+    return mesesAtrasados >= 3;
 }
+
+   
+   
+   
+   
 
 public boolean multaPagada(int idUsuario, Date mes) throws SQLException {
     String sql = "SELECT COUNT(*) FROM pagos WHERE id_usuario=? AND tipo_pago='Multa' AND mes_pagado=?";
@@ -156,6 +195,39 @@ public boolean multaPagada(int idUsuario, Date mes) throws SQLException {
         }
     }
     return false;
+}
+
+
+public int contarMesesAtrasados(int idUsuario, Date fechaCreacionUsuario) throws SQLException {
+    // Buscar último pago de mantenimiento
+    String sql = "SELECT mes_pagado FROM pagos WHERE id_usuario=? AND tipo_pago='Mantenimiento' ORDER BY mes_pagado DESC LIMIT 1";
+    Date ultimoPago = null;
+
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, idUsuario);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                ultimoPago = rs.getDate("mes_pagado");
+            }
+        }
+    }
+
+    // Si nunca ha pagado → usar fecha de creación
+    Date inicio = (ultimoPago != null) ? ultimoPago : fechaCreacionUsuario;
+
+    Calendar calInicio = Calendar.getInstance();
+    calInicio.setTime(inicio);
+    calInicio.add(Calendar.MONTH, 1); // se supone que el primer mes ya está cubierto
+
+    Calendar calHoy = Calendar.getInstance();
+
+    int mesesAtrasados = 0;
+    while (calInicio.before(calHoy)) {
+        mesesAtrasados++;
+        calInicio.add(Calendar.MONTH, 1);
+    }
+
+    return mesesAtrasados;
 }
 
 }

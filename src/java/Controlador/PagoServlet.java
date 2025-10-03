@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.sql.SQLException;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -118,16 +119,26 @@ public class PagoServlet extends HttpServlet {
 
 
 
-                    case "Reinstalación de servicios":
-                        // Verificar si necesita reinstalación (>=2 pagos atrasados)
-                        if (!pagoDAO.necesitaReinstalacion(usuario.getId())) {
-                            request.setAttribute("mensaje", "No tienes reinstalaciones de servicio pendientes.");
-                            request.getRequestDispatcher("/vistas/pagoServicio.jsp").forward(request, response);
-                            return;
-                        }
-                        cantidad = 750;
-                        mesAPagar.setTime(new Date());
-                        break;
+   case "Reinstalación de servicios":
+    try {
+        // Verificar si requiere reinstalación (>=3 meses de mantenimiento sin pagar)
+        if (!pagoDAO.necesitaReinstalacion(usuario.getId())) {
+            request.setAttribute("mensaje", 
+                "No tienes reinstalaciones de servicio pendientes (se requieren al menos 3 meses sin pagar mantenimiento).");
+            request.getRequestDispatcher("/vistas/pagoServicio.jsp").forward(request, response);
+            return;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        request.setAttribute("mensaje", "Error al verificar reinstalación de servicios.");
+        request.getRequestDispatcher("/vistas/pagoServicio.jsp").forward(request, response);
+        return;
+    }
+
+    cantidad = 750;
+    mesAPagar.setTime(new Date());
+    break;
+
                 }
             } else {
                 mesAPagar.setTime(new Date());
@@ -200,7 +211,7 @@ public class PagoServlet extends HttpServlet {
             }
 
             if (mesMultaPendiente == null) {
-                // ⚠️ Bloquear pago si ya se pagaron todas las multas
+                //  Bloquear pago si ya se pagaron todas las multas
                 request.setAttribute("mensajeError", "No tiene multas pendientes por pagar.");
                 request.getRequestDispatcher("/vistas/pagoServicio.jsp").forward(request, response);
                 return;
