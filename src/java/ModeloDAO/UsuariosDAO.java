@@ -116,33 +116,39 @@ public class UsuariosDAO {
 
   
     public Usuarios buscarPorId(int id) {
-        String sql = "SELECT * FROM usuarios WHERE id_usuario = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Usuarios u = new Usuarios();
-                    u.setId(rs.getInt("id_usuario"));
-                    u.setDpi(rs.getString("dpi"));
-                    u.setNombres(rs.getString("nombres"));
-                    u.setApellidos(rs.getString("apellidos"));
-                    u.setCorreo(rs.getString("correo"));
-                    u.setContrasena(rs.getString("contrasena"));
-                    u.setIdRol(rs.getInt("id_rol"));
-                    u.setIdLote(rs.getObject("id_lote") != null ? rs.getInt("id_lote") : null);
-                    u.setIdCasa(rs.getObject("id_casa") != null ? rs.getInt("id_casa") : null);
-                    u.setActivo(rs.getBoolean("activo"));
-                    u.setDentro(rs.getInt("dentro"));
-                    u.setDentro(rs.getInt("dentro"));
+    String sql = "SELECT u.*, " +
+                 " (SELECT nombre FROM catalogos WHERE id = u.id_lote) AS nombre_lote, " +
+                 " (SELECT nombre FROM catalogos WHERE id = u.id_casa) AS numero_casa " +
+                 "FROM usuarios u WHERE u.id_usuario = ?";
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, id);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Usuarios u = new Usuarios();
+                u.setId(rs.getInt("id_usuario"));
+                u.setDpi(rs.getString("dpi"));
+                u.setNombres(rs.getString("nombres"));
+                u.setApellidos(rs.getString("apellidos"));
+                u.setCorreo(rs.getString("correo"));
+                u.setContrasena(rs.getString("contrasena"));
+                u.setIdRol(rs.getInt("id_rol"));
+                u.setIdLote(rs.getObject("id_lote") != null ? rs.getInt("id_lote") : null);
+                u.setIdCasa(rs.getObject("id_casa") != null ? rs.getInt("id_casa") : null);
+                u.setActivo(rs.getBoolean("activo"));
+                u.setDentro(rs.getInt("dentro"));
 
-                    return u;
-                }
+                // ✅ Nuevos campos descriptivos
+                u.setNombreLote(rs.getString("nombre_lote"));
+                u.setNumeroCasa(rs.getString("numero_casa"));
+                return u;
             }
-        } catch (SQLException e) {
-            System.err.println("Error buscando usuario por ID: " + e.getMessage());
         }
-        return null;
+    } catch (SQLException e) {
+        System.err.println("Error buscando usuario por ID: " + e.getMessage());
     }
+    return null;
+}
+
     
     public void actualizarEstado(int idUsuario, int dentro) {
     String sql = "UPDATE usuarios SET dentro=? WHERE id_usuario=?";
@@ -289,6 +295,56 @@ private Usuarios mapRow(ResultSet rs) throws SQLException {
         }
         return correos;
     }
+       
+             public List<String> obtenerCorreosAgentes() throws Exception {
+    List<String> correos = new ArrayList<>();
+    String sql = "SELECT correo FROM usuarios WHERE id_rol = 2 AND activo = 1";
+    try (Connection con = new Conexion().getConnection();
+         PreparedStatement ps = con.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            correos.add(rs.getString("correo"));
+        }
+    }
+    return correos;
+}
+
+
+         public List<Usuarios> listarAgentesActivos() {
+        List<Usuarios> lista = new ArrayList<>();
+        String sql = "SELECT id_usuario, nombres FROM usuarios WHERE id_rol = 2 AND activo=1";
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Usuarios u = new Usuarios();
+                u.setId(rs.getInt("id_usuario"));
+                u.setNombres(rs.getString("nombres"));
+                lista.add(u);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error listando agentes activos: " + e.getMessage());
+        }
+        return lista;
+    }
+
+      
+         public Usuarios obtenerUsuarioConDetallesPorCorreo(String correo) {
+    String sql = "SELECT u.*, " +
+                 " (SELECT nombre FROM catalogos WHERE id = u.id_lote) AS nombre_lote, " +
+                 " (SELECT nombre FROM catalogos WHERE id = u.id_casa) AS numero_casa " +
+                 "FROM usuarios u WHERE u.correo = ?";
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, correo);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error obteniendo usuario con detalles: " + e.getMessage());
+    }
+    return null;
+}
 
 
 

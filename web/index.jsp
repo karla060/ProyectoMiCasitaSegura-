@@ -60,6 +60,10 @@
     <% if (idRol == 2) { %>
       <a class="btn btn-info text-white menu-btn"
          href="<%= request.getContextPath() %>/EscanearQR">Escanear Código QR</a>
+             <a class="btn btn-primary menu-btn"
+       href="<%= request.getContextPath() %>/consultaGeneral">
+       consulta General
+    </a>
     <% } %>
 
     <%-- RESIDENTE (idRol = 3) → registrar visitantes + escanear QR --%>
@@ -76,7 +80,15 @@
     <%-- Nuevo botón para reportes de mantenimiento --%>
     <a class="btn btn-danger menu-btn"
        href="<%= request.getContextPath() %>/ReporteMantenimientoServlet">Reportes de Mantenimiento</a>
+           <%-- NUEVO BOTÓN: Chat / Consulta General --%>
 
+             <%-- NUEVO BOTÓN: Chat / Consulta General --%>
+   <a class="btn btn-primary menu-btn"
+   href="<%= request.getContextPath() %>/vistas/comunicacionInterna.jsp">
+   Comunicación Interna
+</a>
+
+   
     <% } %>
     
  <%-- AGENTE y RESIDENTE → Directorio Residencial --%>

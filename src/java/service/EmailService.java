@@ -268,8 +268,33 @@ public void enviarCorreo(String destino, String asunto, String cuerpo) throws Me
     }
 }
 
+    
+    // Método corregido en EmailService
+public void notificarMensaje(String nombreEmisor, String correoDestinatario) {
+    String asunto = "Notificación de mensaje";
+    String cuerpo = "El usuario " + nombreEmisor + " le ha enviado un mensaje.\n" +
+                    "Favor ingresar al apartado de consulta General para revisar su conversacion con este usuario !!";
+    try {
+        enviarCorreo(correoDestinatario, asunto, cuerpo);
+    } catch (MessagingException e) {
+        e.printStackTrace();
+        // Opcional: log o manejo adicional si falla el envío
+    }
+}
 
+public void enviarCorreoAgentes(List<String> destinatarios, String asunto, String cuerpo) {
+    if (destinatarios == null || destinatarios.isEmpty()) return;
 
+    for (String correo : destinatarios) {
+        try {
+            enviarCorreo(correo, asunto, cuerpo);
+            System.out.println("Correo enviado a agente: " + correo);
+        } catch (MessagingException e) {
+            System.err.println("Error enviando correo a agente " + correo + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
 
 
 }
