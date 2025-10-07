@@ -15,9 +15,13 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.MessagingException;
 
 @WebServlet("/ReporteMantenimientoServlet")
@@ -38,6 +42,19 @@ public class ReporteMantenimientoServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+            // Cargar tipos de inconvenientes desde el catálogo
+        ReporteDAO dao = new ReporteDAO();
+        List<String> tiposInconvenientes = new ArrayList<>();
+
+        try {
+            tiposInconvenientes = dao.listarTiposInconvenientes();
+        } catch (SQLException ex) {
+            Logger.getLogger(ReporteMantenimientoServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        request.setAttribute("tiposInconvenientes", tiposInconvenientes);
+
+
         // Muestra el formulario
         request.getRequestDispatcher("vistas/reporteMantenimiento.jsp").forward(request, response);
     }

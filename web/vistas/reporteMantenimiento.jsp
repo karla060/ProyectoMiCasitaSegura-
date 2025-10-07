@@ -4,6 +4,7 @@
     Author     : gp
 --%>
 
+<%@page import="java.util.List"%>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
@@ -31,14 +32,21 @@
 <form method="post" action="ReporteMantenimientoServlet">
     <div class="mb-3">
         <label>Tipo de inconveniente</label>
-        <select id="tipoInconveniente" name="tipoInconveniente" class="form-select" onchange="habilitarEnviar()">
-            <option value="">--Seleccione--</option>
-            <option>Lentitud en el sistema</option>
-            <option>Error al realizar una acción</option>
-            <option>Error al acceder a una opción</option>
-            <option>Error de visualización</option>
-            <option>Otros</option>
-        </select>
+      <select id="tipoInconveniente" name="tipoInconveniente" class="form-select" onchange="habilitarEnviar()">
+    <option value="">--Seleccione--</option>
+    <%
+        List<String> tipos = (List<String>) request.getAttribute("tiposInconvenientes");
+        if (tipos != null) {
+            for (String t : tipos) {
+    %>
+        <option value="<%= t %>"><%= t %></option>
+    <%
+            }
+        }
+    %>
+</select>
+
+
     </div>
 
     <div class="mb-3">

@@ -7,42 +7,146 @@
 <meta charset="UTF-8">
 <title>Consulta General</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
 <style>
-body { background: #f8f9fa; }
-#listaConvs { max-height: 80vh; overflow-y: auto; }
-#chatContainer { max-height: 80vh; display: flex; flex-direction: column; border-left: 1px solid #ccc; }
-#chatArea { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-.chat-bubble { display: inline-block; padding: 10px; margin: 5px; border-radius: 15px; max-width: 70%; word-wrap: break-word; }
-.left { background-color: #e2e2e2; text-align: left; }
-.right { background-color: #0d6efd; color: white; text-align: right; align-self: flex-end; }
-.conversacion-activa { background-color: #d1e7dd; }
-#chatInputWrapper { padding: 10px; border-top: 1px solid #ccc; background: #fff; }
+body {
+  background: linear-gradient(135deg, #f0f4f8, #d9e6f2);
+  height: 100vh;
+  overflow: hidden;
+}
+
+h5 {
+  font-weight: 600;
+  color: #0d6efd;
+}
+
+#listaConvs {
+  max-height: 85vh;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+  padding: 15px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+#chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 85vh;
+  border-radius: 15px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 0;
+}
+
+#chatArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background: #f9fafc;
+  border-radius: 15px 15px 0 0;
+}
+
+.chat-bubble {
+  display: inline-block;
+  padding: 12px 18px;
+  margin: 8px;
+  border-radius: 18px;
+  max-width: 70%;
+  word-wrap: break-word;
+  position: relative;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.chat-bubble.left {
+  background-color: #e6e6e6;
+  color: #333;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+.chat-bubble.right {
+  background: linear-gradient(135deg, #0d6efd, #468ef7);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.chat-bubble small {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.conversacion-activa {
+  background: linear-gradient(135deg, #d1e7dd, #bcd7c9) !important;
+  font-weight: 600;
+}
+
+.list-group-item a {
+  text-decoration: none;
+  color: #333;
+}
+
+.list-group-item:hover {
+  background-color: #e8f0fe;
+  cursor: pointer;
+}
+
+#chatInputWrapper {
+  padding: 12px 16px;
+  border-top: 1px solid #ddd;
+  background: #fff;
+  border-radius: 0 0 15px 15px;
+}
+
+#inputMensaje {
+  border-radius: 25px;
+  padding-left: 20px;
+}
+
+.btn-success {
+  border-radius: 25px;
+  padding: 8px 20px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0,0,0,0.3);
+}
 </style>
 </head>
 <body>
-<div class="container-fluid">
-<div class="row">
+<div class="container-fluid py-3">
+<div class="row g-3">
 
     <!-- Lista de conversaciones -->
-    <div class="col-3 bg-light" id="listaConvs">
-        <h5>Conversaciones</h5>
+    <div class="col-3" id="listaConvs">
+        <h5 class="mb-3">Conversaciones</h5>
   <% 
-    // Obtener la sesión y el usuario actual
     HttpSession sesion = request.getSession(false);
     if (sesion != null && sesion.getAttribute("usuario") != null) {
         Modelo.Usuarios usuario = (Modelo.Usuarios) sesion.getAttribute("usuario");
         int idRol = usuario.getIdRol();
-        
-        // Mostrar el botón solo si NO es residente (rol = 3)
         if (idRol != 2) { 
-%>
-    <a href="crearConversacion" class="btn btn-sm btn-primary mb-2">Crear nueva conversación</a>
-<% 
+  %>
+      <a href="crearConversacion" class="btn btn-sm btn-primary mb-2 w-100">Nueva conversación</a>
+  <% 
         } 
     } 
-%>
-
-<a href="<%= request.getContextPath() %>/vistas/comunicacionInterna.jsp" class="btn btn-sm btn btn-secondary mb-2">Cancelar</a>
+  %>
+      <a href="<%= request.getContextPath() %>/vistas/comunicacionInterna.jsp" class="btn btn-sm btn-secondary w-100 mb-3">Cancelar</a>
 
         <ul class="list-group">
             <c:forEach var="conv" items="${conversaciones}">
@@ -50,7 +154,7 @@ body { background: #f8f9fa; }
                     <a href="consultaGeneral?convId=${conv.id}">
                         <c:choose>
                             <c:when test="${usuarioActual.id == conv.residenteId}">
-                                Agente: ${conv.agenteNombre}
+                                 Agente: ${conv.agenteNombre}
                             </c:when>
                             <c:otherwise>
                                 Residente: ${conv.residenteNombre}
@@ -66,18 +170,19 @@ body { background: #f8f9fa; }
     <div class="col-9" id="chatContainer">
         <c:forEach var="conv" items="${conversaciones}">
             <c:if test="${conv.id == convSeleccionadaId}">
-                <h5 class="mt-2 mb-2">
-                    <c:choose>
-                        <c:when test="${usuarioActual.id == conv.residenteId}">
-                            Chat con Agente: ${conv.agenteNombre}
-                        </c:when>
-                        <c:otherwise>
-                            Chat con Residente: ${conv.residenteNombre}
-                        </c:otherwise>
-                    </c:choose>
-                </h5>
+                <div class="px-4 pt-3 border-bottom">
+                    <h5>
+                        <c:choose>
+                            <c:when test="${usuarioActual.id == conv.residenteId}">
+                                Chat con <span class="text-primary">${conv.agenteNombre}</span>
+                            </c:when>
+                            <c:otherwise>
+                                Chat con <span class="text-success">${conv.residenteNombre}</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </h5>
+                </div>
 
-                <!-- Contenedor de mensajes -->
                 <div id="chatArea">
                     <c:forEach var="msg" items="${conv.mensajes}">
                         <div class="chat-bubble ${msg.emisorId == usuarioActual.id ? 'right' : 'left'}">
@@ -87,12 +192,11 @@ body { background: #f8f9fa; }
                     </c:forEach>
                 </div>
 
-                <!-- Formulario de envío -->
-                <div id="chatInputWrapper">
-                    <form id="formMensaje" class="d-flex">
+                <div id="chatInputWrapper" class="d-flex">
+                    <form id="formMensaje" class="d-flex w-100">
                         <input type="hidden" id="conversacionId" value="${conv.id}" />
                         <input type="hidden" id="receptorId" value="${usuarioActual.id == conv.residenteId ? conv.agenteId : conv.residenteId}" />
-                        <input type="text" id="inputMensaje" class="form-control me-2" placeholder="Escribe tu mensaje" required />
+                        <input type="text" id="inputMensaje" class="form-control me-2" placeholder="Escribe tu mensaje..." required />
                         <button class="btn btn-success" type="submit">Enviar</button>
                     </form>
                 </div>
@@ -106,7 +210,6 @@ body { background: #f8f9fa; }
 <script>
 const usuarioId = <c:out value="${usuarioActual.id}" />;
 
-// Función para mostrar mensaje en chat
 function agregarMensaje(data) {
     const conversacionId = parseInt(document.getElementById('conversacionId').value);
     if(data.conversacionId === conversacionId){
@@ -120,23 +223,19 @@ function agregarMensaje(data) {
     }
 }
 
-// Conectar WebSocket
 function conectarWebSocket() {
     const ws = new WebSocket("ws://" + location.host + "<%= request.getContextPath() %>/chat/" + usuarioId);
 
     ws.onopen = () => console.log("Conectado al WebSocket");
-
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         agregarMensaje(data);
     };
-
     ws.onclose = () => {
         console.log("WebSocket cerrado, reconectando en 2s...");
         setTimeout(conectarWebSocket, 2000);
     };
 
-    // Enviar mensaje
     document.getElementById('formMensaje').addEventListener('submit', function(e){
         e.preventDefault();
         const mensaje = document.getElementById('inputMensaje').value.trim();
@@ -157,7 +256,6 @@ function conectarWebSocket() {
     });
 }
 
-// Inicializar WebSocket
 conectarWebSocket();
 </script>
 </body>

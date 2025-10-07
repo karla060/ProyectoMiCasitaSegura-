@@ -50,29 +50,6 @@ public class ReservaDAO {
     return lista;
 }
 
-    
-/*
-    public List<Reserva> listar() throws SQLException {
-        List<Reserva> lista = new ArrayList<>();
-        String sql = "SELECT * FROM reservas WHERE estado='activa'";
-        try (PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Reserva r = new Reserva();
-                r.setId(rs.getInt("id"));
-                r.setSalon(rs.getString("salon"));
-                r.setResidenteNombre(rs.getString("residente_nombre"));
-                r.setResidenteCorreo(rs.getString("residente_correo"));
-                r.setFecha(rs.getDate("fecha"));
-                r.setHoraInicio(rs.getTime("hora_inicio"));
-                r.setHoraFin(rs.getTime("hora_fin"));
-                r.setEstado(rs.getString("estado"));
-                lista.add(r);
-            }
-        }
-        return lista;
-    }
-*/
     public int registrar(Reserva r) throws SQLException {
         String sql = "INSERT INTO reservas(salon, residente_nombre, residente_correo, fecha, hora_inicio, hora_fin, estado) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -137,5 +114,20 @@ public class ReservaDAO {
     }
 }
     
+    
+    
+    // 🔹 Obtener lista de salones desde catálogo
+    public List<String> listarSalones() throws SQLException {
+        List<String> salones = new ArrayList<>();
+        String sql = "SELECT nombre FROM catalogos WHERE catalogo = 5 ORDER BY id";
+        try (Connection con = new Conexion().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                salones.add(rs.getString("nombre"));
+            }
+        }
+        return salones;
+    }
 }
 

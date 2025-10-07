@@ -4,6 +4,7 @@
     Author     : gp
 --%>
 
+<%@page import="java.util.List"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="javax.servlet.http.HttpSession" %>
 <html lang="es">
@@ -34,14 +35,24 @@
                 <input type="hidden" name="accion" value="registrar">
 
                 <!-- Salón -->
-                <div class="mb-3">
-                    <label class="form-label">Salón para reservar:</label>
-                    <select name="salon" class="form-select" required>
-                        <option value="">--Seleccione--</option>
-                        <option value="Salón">Salón</option>
-                        <option value="Piscina">Piscina</option>
-                    </select>
-                </div>
+               <!-- Salón -->
+<div class="mb-3">
+    <label class="form-label">Salón para reservar:</label>
+    <select name="salon" class="form-select" required>
+        <option value="">--Seleccione--</option>
+        <%
+            List<String> salones = (List<String>) request.getAttribute("salones");
+            if (salones != null) {
+                for (String s : salones) {
+        %>
+            <option value="<%= s %>"><%= s %></option>
+        <%
+                }
+            }
+        %>
+    </select>
+</div>
+
 
                 <!-- Residente -->
                 <div class="mb-3">

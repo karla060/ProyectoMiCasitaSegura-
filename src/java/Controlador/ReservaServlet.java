@@ -16,8 +16,11 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/ReservaServlet")
 public class ReservaServlet extends HttpServlet {
@@ -39,8 +42,18 @@ public class ReservaServlet extends HttpServlet {
         } else if (accion.equals("cancelar")) {
             cancelarReserva(request, response);
         } else if (accion.equals("nueva")) {
-            request.getRequestDispatcher("vistas/crear_reserva.jsp").forward(request, response);
-        } else {
+    try (Connection con = conexion.getConnection()) {
+        ReservaDAO dao = new ReservaDAO(con);
+        List<String> salones = dao.listarSalones();
+        request.setAttribute("salones", salones);
+    } catch (SQLException e) {
+        e.printStackTrace();
+        request.setAttribute("error", "Error cargando los salones");
+    }
+    request.getRequestDispatcher("vistas/crear_reserva.jsp").forward(request, response);
+}
+
+        else {
             listarReservas(request, response);
         }
     }
@@ -75,20 +88,6 @@ public class ReservaServlet extends HttpServlet {
     }
 }
 
-    /*
-    // 📌 Listar reservas
-    private void listarReservas(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try (Connection con = conexion.getConnection()) {
-            ReservaDAO dao = new ReservaDAO(con);
-            List<Reserva> lista = dao.listar();
-            request.setAttribute("reservas", lista);
-            request.getRequestDispatcher("vistas/gestionar_reservas.jsp").forward(request, response);
-        } catch (Exception e) {
-            throw new ServletException("Error al listar reservas", e);
-        }
-    }
-*/
 private void registrarReserva(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
     HttpSession sesion = request.getSession(false);
@@ -120,6 +119,8 @@ private void registrarReserva(HttpServletRequest request, HttpServletResponse re
         // Validar fecha anterior
         if (fecha.before(hoy)) {
             request.setAttribute("error", "No se puede reservar en una fecha anterior a hoy.");
+            List<String> salones = dao.listarSalones();
+            request.setAttribute("salones", salones);
             request.getRequestDispatcher("vistas/crear_reserva.jsp").forward(request, response);
             return;
         }
@@ -127,6 +128,7 @@ private void registrarReserva(HttpServletRequest request, HttpServletResponse re
         // Validar hora fin mayor a hora inicio
         if (!horaFin.after(horaInicio)) {
             request.setAttribute("error", "La hora de fin debe ser posterior a la hora de inicio.");
+            request.setAttribute("salones", dao.listarSalones()); // recargar salones
             request.getRequestDispatcher("vistas/crear_reserva.jsp").forward(request, response);
             return;
         }
@@ -134,6 +136,7 @@ private void registrarReserva(HttpServletRequest request, HttpServletResponse re
         // 🚨 Validar disponibilidad
         if (!dao.estaDisponible(salon, fecha, horaInicio, horaFin)) {
             request.setAttribute("error", "El salón no está disponible en ese horario.");
+            request.setAttribute("salones", dao.listarSalones()); // recargar salones
             request.getRequestDispatcher("vistas/crear_reserva.jsp").forward(request, response);
             return;
         }
