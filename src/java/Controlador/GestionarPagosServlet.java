@@ -18,6 +18,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import ModeloDAO.TipoDePagoDAO;
+import Modelo.TipoDePago;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  *
@@ -25,6 +29,8 @@ import javax.servlet.http.HttpSession;
  */
 @WebServlet("/GestionarPagos")
 public class GestionarPagosServlet extends HttpServlet {
+
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -41,9 +47,19 @@ public class GestionarPagosServlet extends HttpServlet {
         }
 
         try (Connection con = new Conexion().getConnection()) {
+            // Obtener pagos del usuario
             PagoDAO dao = new PagoDAO(con);
             List<Pago> pagos = dao.listarPagosPorUsuario(usuario.getId());
             request.setAttribute("pagos", pagos);
+
+            // Crear mapa idCatalogo → nombreTipoPago
+            TipoDePagoDAO tipoDAO = new TipoDePagoDAO();
+            Map<Integer, String> tiposMap = new HashMap<>();
+            for (TipoDePago t : tipoDAO.listar()) {
+                tiposMap.put(t.getId(), t.getNombre());
+            }
+            request.setAttribute("tiposMap", tiposMap);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

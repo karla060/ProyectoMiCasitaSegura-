@@ -11,24 +11,25 @@ package Controlador;
  */
 
 
+import Modelo.Usuarios;
 import Modelo.Pago;
 import ModeloDAO.PagoDAO;
-import Config.Conexion;
-import Modelo.Usuarios;
 import ModeloDAO.AuditoriaSistemaDAO;
+import ModeloDAO.TipoDePagoDAO;
+import Modelo.TipoDePago;
+import Config.Conexion;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 import java.sql.SQLException;
-
+import java.text.SimpleDateFormat;
+import java.util.*;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/PagoServlet")
 public class PagoServlet extends HttpServlet {
@@ -49,7 +50,7 @@ public class PagoServlet extends HttpServlet {
             return;
         }
 
-        String tipoPago = request.getParameter("tipoPago"); 
+        String tipoPago = request.getParameter("tipoPago");
         String mesAPagarStr = "";
         Calendar fechaLimite = Calendar.getInstance();
         double cantidad = 0;
@@ -57,14 +58,35 @@ public class PagoServlet extends HttpServlet {
         try (Connection con = new Conexion().getConnection()) {
             PagoDAO pagoDAO = new PagoDAO(con);
             AuditoriaSistemaDAO auditoriaDAO = new AuditoriaSistemaDAO();
+            TipoDePagoDAO tipoDAO = new TipoDePagoDAO();
+
+            // ✅ Cargar tipos de pago (catalogo = 3)
+            List<TipoDePago> tiposPago = tipoDAO.listar();
+            request.setAttribute("tiposPago", tiposPago);
 
             Calendar mesAPagar = Calendar.getInstance();
+            int idCatalogo = 0;
 
             if (tipoPago != null && !tipoPago.isEmpty()) {
                 switch (tipoPago) {
-                   case "Mantenimiento":
+                    case "Mantenimiento":
+                        idCatalogo = 77;
+                        cantidad = 550;
+                        break;
+                    case "Multa":
+                        idCatalogo = 78;
+                        cantidad = 250;
+                        break;
+                    case "Reinstalación de servicios":
+                        idCatalogo = 79;
+                        cantidad = 750;
+                        break;
+                }
+
+                switch (tipoPago) {
+                    case "Mantenimiento":
     // Buscar último pago
-    Pago ultimoPago = pagoDAO.obtenerUltimoPagoPorTipo(usuario.getId(), tipoPago);
+    Pago ultimoPago = pagoDAO.obtenerUltimoPagoPorCatalogo(usuario.getId(), idCatalogo);
     if (ultimoPago != null && ultimoPago.getMesPagado() != null) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(ultimoPago.getMesPagado());
@@ -90,8 +112,7 @@ public class PagoServlet extends HttpServlet {
     }
     break;
 
-
-     case "Multa":
+                     case "Multa":
     // Buscar meses atrasados
     List<Date> mesesAtrasados = pagoDAO.obtenerMesesAtrasados(usuario.getId());
     Date mesMultaPendiente = null;
@@ -139,14 +160,13 @@ public class PagoServlet extends HttpServlet {
     mesAPagar.setTime(new Date());
     break;
 
+            
                 }
             } else {
                 mesAPagar.setTime(new Date());
             }
 
-            mesAPagarStr = new SimpleDateFormat("MMMM yyyy").format(mesAPagar.getTime());
-
-            // Fecha límite de pago para calcular mora (día 5 del mes)
+            mesAPagarStr = new SimpleDateFormat("MMMM yyyy", new Locale("es", "ES")).format(mesAPagar.getTime());
             fechaLimite.setTime(mesAPagar.getTime());
             fechaLimite.set(Calendar.DAY_OF_MONTH, 5);
 
@@ -154,7 +174,6 @@ public class PagoServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Atributos para JSP
         request.setAttribute("tipoPago", tipoPago);
         request.setAttribute("mesAPagarStr", mesAPagarStr);
         request.setAttribute("fechaLimite", fechaLimite.getTime());
@@ -182,13 +201,23 @@ public class PagoServlet extends HttpServlet {
         String fechaVenc = request.getParameter("fechaVencimiento");
         String cvv = request.getParameter("cvv");
         String nombreTitular = request.getParameter("nombreTitular");
-        String mesAPagarStr = request.getParameter("mesAPagar");
 
         double cantidad = 0;
+        int idCatalogo = 0;
+
         switch (tipoPago) {
-            case "Mantenimiento": cantidad = 550; break;
-            case "Multa": cantidad = 250; break;
-            case "Reinstalación de servicios": cantidad = 750; break;
+            case "Mantenimiento":
+                cantidad = 550;
+                idCatalogo = 77;
+                break;
+            case "Multa":
+                cantidad = 250;
+                idCatalogo = 78;
+                break;
+            case "Reinstalación de servicios":
+                cantidad = 750;
+                idCatalogo = 79;
+                break;
         }
 
         double mora = 0;
@@ -196,68 +225,65 @@ public class PagoServlet extends HttpServlet {
 
         try (Connection con = new Conexion().getConnection()) {
             PagoDAO dao = new PagoDAO(con);
-            
-             java.util.Date mesAPagar = null;
-           if ("Multa".equals(tipoPago)) {
-            // Buscar meses atrasados
-            List<Date> mesesAtrasados = dao.obtenerMesesAtrasados(idUsuario);
-            Date mesMultaPendiente = null;
+            java.util.Date mesAPagar = null;
 
-            for (Date mes : mesesAtrasados) {
-                if (!dao.multaPagada(idUsuario, new java.sql.Date(mes.getTime()))) {
-                    mesMultaPendiente = mes;
-                    break;
+            if ("Mantenimiento".equals(tipoPago)) {
+                Pago ultimoPago = dao.obtenerUltimoPagoPorCatalogo(idUsuario, idCatalogo);
+                if (ultimoPago != null && ultimoPago.getMesPagado() != null) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(ultimoPago.getMesPagado());
+                    cal.add(Calendar.MONTH, 1);
+                    mesAPagar = cal.getTime();
+                } else {
+                    AuditoriaSistemaDAO auditoriaDAO = new AuditoriaSistemaDAO();
+                    Date fechaCreacion = auditoriaDAO.obtenerFechaCreacionUsuarioPorId(idUsuario);
+                    mesAPagar = fechaCreacion != null ? fechaCreacion : new Date();
                 }
-            }
-
-            if (mesMultaPendiente == null) {
-                //  Bloquear pago si ya se pagaron todas las multas
-                request.setAttribute("mensajeError", "No tiene multas pendientes por pagar.");
-                request.getRequestDispatcher("/vistas/pagoServicio.jsp").forward(request, response);
-                return;
-            }
-
-            cantidad = 250;
-            mesAPagar = mesMultaPendiente; // La multa corresponde al mes atrasado
-        }
-
-            if ("Reinstalación de servicios".equals(tipoPago)) {
+            } else if ("Multa".equals(tipoPago)) {
+                List<Date> mesesAtrasados = dao.obtenerMesesAtrasados(idUsuario);
+                for (Date mes : mesesAtrasados) {
+                    if (!dao.multaPagada(idUsuario, mes)) {
+                        mesAPagar = mes;
+                        break;
+                    }
+                }
+                if (mesAPagar == null) {
+                    request.setAttribute("mensajeError", "No tiene multas pendientes por pagar.");
+                    request.getRequestDispatcher("/vistas/pagoServicio.jsp").forward(request, response);
+                    return;
+                }
+            } else if ("Reinstalación de servicios".equals(tipoPago)) {
                 if (!dao.necesitaReinstalacion(idUsuario)) {
                     request.setAttribute("mensajeError", "No tiene reinstalaciones pendientes de servicio.");
                     request.getRequestDispatcher("/vistas/pagoServicio.jsp").forward(request, response);
                     return;
                 }
+                mesAPagar = new Date();
             }
 
-            // Convertir fechas
-            java.util.Date fechaVencDate = new SimpleDateFormat("yyyy-MM-dd").parse(fechaVenc);
-            mesAPagar = null;
-            
-            
-            if ("Mantenimiento".equals(tipoPago) || "Multa".equals(tipoPago)) {
-                if (mesAPagarStr != null && !mesAPagarStr.isEmpty()) {
-                    mesAPagar = new SimpleDateFormat("yyyy-MM-dd").parse(mesAPagarStr);
-                }
+            // ✅ Validar formato de fecha
+            java.util.Date fechaVencDate = null;
+            if (fechaVenc != null && !fechaVenc.isEmpty()) {
+                fechaVencDate = new SimpleDateFormat("yyyy-MM-dd").parse(fechaVenc);
             }
 
-            // Calcular mora si es mantenimiento
+            // ✅ Calcular mora solo para mantenimiento
             if ("Mantenimiento".equals(tipoPago)) {
                 Calendar limite = Calendar.getInstance();
                 limite.setTime(mesAPagar);
-                limite.set(Calendar.DAY_OF_MONTH, 5); // día límite
+                limite.set(Calendar.DAY_OF_MONTH, 5);
                 Date hoy = new Date();
                 if (hoy.after(limite.getTime())) {
                     long diff = hoy.getTime() - limite.getTimeInMillis();
-                    long diasAtraso = (diff / (1000*60*60*24)); // incluir hoy
-                    mora = diasAtraso * 25; // Q25 por día
+                    long diasAtraso = (diff / (1000 * 60 * 60 * 24));
+                    mora = diasAtraso * 25;
                     total += mora;
                 }
             }
 
-            // Crear objeto Pago
             Pago pago = new Pago();
             pago.setIdUsuario(idUsuario);
-            pago.setTipoPago(tipoPago);
+            pago.setIdCatalogo(idCatalogo);
             pago.setCantidad(cantidad);
             pago.setObservaciones(observaciones);
             pago.setNumeroTarjeta(numeroTarjeta);
@@ -268,14 +294,14 @@ public class PagoServlet extends HttpServlet {
             pago.setTotal(total);
             pago.setMesPagado(mesAPagar);
 
-            // Guardar pago
             dao.registrarPago(pago);
 
-            response.sendRedirect(request.getContextPath() + "/PagoServlet?success=1&tipoPago=" + tipoPago);
+           response.sendRedirect(request.getContextPath() + "/GestionarPagos?success=1&idCatalogo=" + idCatalogo);
+
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/PagoServlet?error=1&tipoPago=" + tipoPago);
+            response.sendRedirect(request.getContextPath() + "/PagoServlet?error=1&tipoPago=" + idCatalogo);
         }
     }
 }

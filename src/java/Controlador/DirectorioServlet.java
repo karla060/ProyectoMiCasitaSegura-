@@ -29,7 +29,7 @@ public class DirectorioServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp)
             throws ServletException, IOException {
-        // 3.3.1–3.3.3 Carga filtros y muestra formulario vacío
+        // Carga filtros y muestra formulario vacío
         cargarFiltros(req);
         req.getRequestDispatcher("/vistas/FA10_directorio.jsp")
            .forward(req, resp);
@@ -50,7 +50,7 @@ public class DirectorioServlet extends HttpServlet {
         // Carga siempre lotes y casas para el form
         cargarFiltros(req);
 
-        // 3.3.4 – Leer parámetros de búsqueda
+        //  Leer parámetros de búsqueda
         String nombres   = limpiar(req.getParameter("nombres"));
         String apellidos = limpiar(req.getParameter("apellidos"));
         Integer idLote   = parsearEntero(req.getParameter("idLote"));

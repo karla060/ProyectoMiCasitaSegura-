@@ -3,11 +3,10 @@
     Created on : 30/09/2025, 05:26:33 PM
     Author     : mpelv
 --%>
-<%@page import="java.text.SimpleDateFormat"%>
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page import="Modelo.Usuarios, Modelo.Pago, ModeloDAO.PagoDAO, Config.Conexion" %>
-<%@ page import="java.sql.Connection, java.util.List" %>
-<%@ page import="javax.servlet.http.HttpSession" %>
+<%@ page import="Modelo.Usuarios" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <%
     HttpSession sesion = request.getSession(false);
@@ -20,14 +19,6 @@
         response.sendRedirect(request.getContextPath() + "/index.jsp");
         return;
     }
-
-    List<Pago> pagos = null;
-    try (Connection con = new Conexion().getConnection()) {
-        PagoDAO dao = new PagoDAO(con);
-        pagos = dao.listarPagosPorUsuario(usuario.getId());
-    } catch(Exception e) { e.printStackTrace(); }
-
-    String success = request.getParameter("success");
 %>
 
 <!DOCTYPE html>
@@ -43,21 +34,17 @@
     <h1>Historial de Pagos - <%= usuario.getNombres() %></h1>
 
     <!-- Mensaje de éxito -->
-    <% if("1".equals(success)) { %>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Pago realizado con éxito
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
-    <% } %>
+   <c:if test="${param.success eq '1'}">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Pago realizado con éxito
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+</c:if>
 
-    <!-- Botones al mismo nivel -->
+    <!-- Botones -->
     <div class="d-flex justify-content-between mb-3">
-        <a href="<%= request.getContextPath() %>/PagoServlet" class="btn btn-warning">
-            Pagar Servicio
-        </a>
-        <a href="<%= request.getContextPath() %>/index.jsp" class="btn btn-secondary">
-            <i class="bi bi-house-fill"></i> Menú Principal
-        </a>
+        <a href="${pageContext.request.contextPath}/PagoServlet" class="btn btn-warning">Pagar Servicio</a>
+        <a href="${pageContext.request.contextPath}/index.jsp" class="btn btn-secondary"><i class="bi bi-house-fill"></i> Menú Principal</a>
     </div>
 
     <!-- Tabla de pagos -->
@@ -72,23 +59,17 @@
             </tr>
         </thead>
         <tbody>
-        <%
-            int cont = 1;
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            if(pagos != null){
-                for(Pago p : pagos){
-        %>
-            <tr>
-                <td><%= cont++ %></td>
-                <td><%= p.getTipoPago() %></td>
-                <td><%= p.getCantidad() %></td>
-                <td><%= (p.getFechaPago() != null) ? sdf.format(p.getFechaPago()) : "" %></td>
-                <td><%= p.getObservaciones() %></td>
-            </tr>
-        <% 
-                }
-            } 
-        %>
+            <c:forEach var="p" items="${pagos}" varStatus="status">
+                <tr>
+                    <td>${status.index + 1}</td>
+                    <td>${tiposMap[p.idCatalogo]}</td>
+                    <td>${p.cantidad}</td>
+                    <td>
+                        <fmt:formatDate value="${p.fechaPago}" pattern="dd/MM/yyyy" />
+                    </td>
+                    <td>${p.observaciones}</td>
+                </tr>
+            </c:forEach>
         </tbody>
     </table>
 </div>

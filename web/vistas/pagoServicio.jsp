@@ -6,6 +6,8 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="Modelo.Usuarios" %>
 <%@ page import="javax.servlet.http.HttpSession" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 <%
     HttpSession sesion = request.getSession(false);
     if (sesion == null || sesion.getAttribute("usuario") == null) {
@@ -54,46 +56,23 @@
 <% } %>
 
     
-    
-    <% if("1".equals(success)) { %>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-         Pago realizado con éxito
-        <div class="form-check mt-2">
-            <input class="form-check-input" type="checkbox" id="redirigirCheck">
-            <label class="form-check-label" for="redirigirCheck">
-                Ir a Gestionar Pagos
-            </label>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-    </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const check = document.getElementById("redirigirCheck");
-            if(check){
-                check.addEventListener("change", () => {
-                    if(check.checked){
-                        window.location.href = "<%= request.getContextPath() %>/GestionarPagos";
-                    }
-                });
-            }
-        });
-    </script>
-    <% } %>
 
     <h1>Pagos de Servicios - <%= usuario.getNombres() %></h1>
 
     <form method="post" action="PagoServlet" id="formPago">
 
-        <!-- Selección de tipo de pago -->
-        <div class="mb-3">
-            <label>Tipo de pago *</label>
-            <select name="tipoPago" id="tipoPago" class="form-control" required>
-                <option value="">Seleccione...</option>
-                <option value="Mantenimiento">Mantenimiento</option>
-                <option value="Multa">Multa</option>
-                <option value="Reinstalación de servicios">Reinstalación de servicios</option>
-            </select>
-        </div>
+       <!-- Selección de tipo de pago -->
+<div class="mb-3">
+    <label>Tipo de pago *</label>
+    <select name="tipoPago" id="tipoPago" class="form-control" required>
+    <option value="">Seleccione...</option>
+    <c:forEach var="tipo" items="${tiposPago}">
+        <option value="${tipo.nombre}">${tipo.nombre}</option>
+    </c:forEach>
+</select>
+
+</div>
+
 
         <!-- Botón Consultar -->
         <div class="mb-3">
@@ -165,28 +144,82 @@ const camposPago = document.getElementById("camposPago");
 const cantidadBase = <%= cantidad %>;
 const fechaLimite = new Date("<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(fechaLimite) %>");
 
-// Habilitar botón Consultar cuando se selecciona tipo de pago
-tipoPagoSelect.addEventListener("change", () => {
-    btnConsultar.disabled = tipoPagoSelect.value === "";
-});
-
-// Acción botón Consultar
-btnConsultar.addEventListener("click", () => {
-    const tipo = tipoPagoSelect.value;
-    window.location.href = "PagoServlet?tipoPago=" + encodeURIComponent(tipo);
-});
-
-// Mostrar campos después de consultar
-<% if (request.getAttribute("tipoPago") != null && request.getAttribute("cantidad") != null) { %>
+// Limitar fecha de vencimiento a hoy o posterior
 document.addEventListener("DOMContentLoaded", () => {
+    const fechaInput = document.querySelector("input[name='fechaVencimiento']");
+    if (fechaInput) {
+        const hoy = new Date();
+        const año = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        fechaInput.min = `${año}-${mes}-${dia}`; // establece la fecha mínima
+    }
+
+    // Habilitar botón Consultar cuando se selecciona tipo de pago
+    tipoPagoSelect.addEventListener("change", () => {
+        btnConsultar.disabled = tipoPagoSelect.value === "";
+    });
+
+    // Acción botón Consultar
+    btnConsultar.addEventListener("click", () => {
+        const tipo = tipoPagoSelect.value;
+        window.location.href = "PagoServlet?tipoPago=" + encodeURIComponent(tipo);
+    });
+
+    // Mostrar campos después de consultar
+    <% if (request.getAttribute("tipoPago") != null && request.getAttribute("cantidad") != null) { %>
     camposPago.style.display = "block";
     const tipoPago = "<%= request.getAttribute("tipoPago") %>";
     if(tipoPago){
         tipoPagoSelect.value = tipoPago;
     }
     actualizarTotal(); // recalcular mora y total
+    <% } %>
+
+    // Escuchar cambios en inputs requeridos para habilitar botón
+    document.querySelectorAll("#formPago input[required], #formPago select[required]")
+        .forEach(el => el.addEventListener("input", habilitarBoton));
+
+    // Antes de enviar el formulario
+   document.getElementById("formPago").addEventListener("submit", (e) => {
+    const fechaVenc = document.querySelector("input[name='fechaVencimiento']").value;
+    if (fechaVenc) {
+        // Obtenemos fecha de hoy ignorando la hora
+        const hoy = new Date();
+        const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+
+        // Obtenemos fecha ingresada ignorando la hora
+        const partes = fechaVenc.split("-");
+        const fechaIngresada = new Date(partes[0], partes[1]-1, partes[2]);
+
+        // Comparación correcta, hoy cuenta
+        if (fechaIngresada < hoySoloFecha) {
+            e.preventDefault(); // Bloquea el envío
+
+            // Mostrar mensaje tipo Bootstrap
+            let contenedor = document.querySelector(".alert-container");
+            if (!contenedor) {
+                contenedor = document.createElement("div");
+                contenedor.classList.add("alert-container", "mb-3");
+                document.querySelector(".container").prepend(contenedor);
+            }
+            contenedor.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    La fecha de vencimiento debe ser hoy o posterior.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            `;
+            return;
+        }
+    }
+
+    // Copiar valores a hidden antes de enviar
+    document.getElementById("mesAPagarHidden").value = document.getElementById("mesAPagarHidden").value;
+    document.getElementById("moraHidden").value = document.getElementById("mora").value;
+    document.getElementById("totalHidden").value = document.getElementById("total").value;
+    });
+
 });
-<% } %>
 
 // Calcula mora y total
 function actualizarTotal() {
@@ -195,8 +228,11 @@ function actualizarTotal() {
 
     if(tipo === "Mantenimiento") {
         const hoy = new Date();
-        if(hoy > fechaLimite) {
-            const diffTime = hoy - fechaLimite;
+        hoy.setHours(0,0,0,0);
+        const fechaLim = new Date(fechaLimite);
+        fechaLim.setHours(0,0,0,0);
+        if(hoy > fechaLim) {
+            const diffTime = hoy - fechaLim;
             const diasRetraso = Math.floor(diffTime / (1000*60*60*24));
             mora = diasRetraso * 25;
         }
@@ -242,25 +278,9 @@ function limpiarCampos() {
     document.getElementById("totalHidden").value = "0.00";
     document.getElementById("btnRegistrar").disabled = true;
 }
-
-// Copiar valores visibles a hidden antes de enviar y habilitar botón al escribir
-document.addEventListener("DOMContentLoaded", () => {
-    // Actualizar hidden con mes a pagar si ya viene del servlet
-    const mesTexto = document.getElementById("mesAPagarHidden").value;
-    document.getElementById("mesAPagarHidden").value = mesTexto;
-
-    // Escuchar cambios en inputs requeridos
-    document.querySelectorAll("#formPago input[required], #formPago select[required]")
-        .forEach(el => el.addEventListener("input", habilitarBoton));
-
-    // Antes de enviar, aseguramos que hidden tenga valores correctos
-    document.getElementById("formPago").addEventListener("submit", () => {
-        document.getElementById("mesAPagarHidden").value = document.getElementById("mesAPagarHidden").value;
-        document.getElementById("moraHidden").value = document.getElementById("mora").value;
-        document.getElementById("totalHidden").value = document.getElementById("total").value;
-    });
-});
 </script>
+ 
+
 
 </body>
 </html>
