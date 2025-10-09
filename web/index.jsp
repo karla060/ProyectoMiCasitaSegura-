@@ -64,6 +64,14 @@
        href="<%= request.getContextPath() %>/consultaGeneral">
        consulta General
     </a>
+       
+        <%-- Nuevo botón para registrar paquetería --%>
+        <a class="btn btn-warning menu-btn"
+        href="<%= request.getContextPath() %>/PaqueteServlet">
+        Registrar Paquetería
+        </a>
+       
+       
     <% } %>
 
     <%-- RESIDENTE (idRol = 3) → registrar visitantes + escanear QR --%>

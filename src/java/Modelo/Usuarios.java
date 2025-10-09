@@ -19,8 +19,7 @@ public class Usuarios {
     private String correo;
     private String contrasena;
     private int idRol;
- //   private final ObjectProperty<Lote> lote = new SimpleObjectProperty<>();
-   // private final ObjectProperty<Casa> casa = new SimpleObjectProperty<>();
+ 
     private Integer idLote;
     private Integer idCasa;
     private boolean activo;

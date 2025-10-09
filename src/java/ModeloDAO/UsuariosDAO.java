@@ -218,50 +218,7 @@ public class UsuariosDAO {
     return lista;
 }
 
-    
-/*
-    public List<Usuarios> buscarResidentes(String nombres,
-                                       String apellidos,
-                                       Integer idLote,
-                                       Integer idCasa) {
-    List<Usuarios> lista = new ArrayList<>();
-   StringBuilder sql = new StringBuilder(
-  "SELECT u.*, l.nombre_lote " +
-  "  FROM usuarios u " +
-  "  LEFT JOIN lotes l ON u.id_lote = l.id_lote " +
-  " WHERE u.id_rol = ? AND u.activo = TRUE"
-);
-if (nombres != null && !nombres.isEmpty())
-  sql.append(" AND LOWER(u.nombres)   LIKE ? ");
-if (apellidos != null && !apellidos.isEmpty())
-  sql.append(" AND LOWER(u.apellidos) LIKE ? ");
-if (idLote != null)
-  sql.append(" AND u.id_lote = ? ");
-if (idCasa != null)
-  sql.append(" AND u.id_casa = ? ");
 
-
-    try (PreparedStatement ps = con.prepareStatement(sql.toString())) {
-        int idx = 1;
-        ps.setInt(idx++, ID_ROL_RESIDENTE);
-        if (nombres != null && !nombres.isEmpty())
-            ps.setString(idx++, "%" + nombres.toLowerCase() + "%");
-        if (apellidos != null && !apellidos.isEmpty())
-            ps.setString(idx++, "%" + apellidos.toLowerCase() + "%");
-        if (idLote != null) ps.setInt(idx++, idLote);
-        if (idCasa != null) ps.setInt(idx++, idCasa);
-
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                lista.add(mapRow(rs));
-            }
-        }
-    } catch (SQLException e) {
-        System.err.println("Error buscarResidentes: " + e.getMessage());
-    }
-    return lista;
-}
-*/
 private Usuarios mapRow(ResultSet rs) throws SQLException {
     Usuarios u = new Usuarios();
     u.setId(rs.getInt("id_usuario"));
@@ -346,6 +303,43 @@ private Usuarios mapRow(ResultSet rs) throws SQLException {
     return null;
 }
 
+  // 🔹 Listar solo los residentes activos con LEFT JOIN para traer casas
+    public List<Usuarios> listarResidentesActivos() {
+        List<Usuarios> lista = new ArrayList<>();
+        String sql = "SELECT u.*, l.nombre AS nombre_lote, c.nombre AS numero_casa " +
+                     "FROM usuarios u " +
+                     "LEFT JOIN catalogos l ON u.id_lote = l.id " +
+                     "LEFT JOIN catalogos c ON u.id_casa = c.id AND c.catalogo = 2 " +
+                     "WHERE u.id_rol = ? AND u.activo = 1";
 
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, ID_ROL_RESIDENTE);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error listando residentes activos: " + e.getMessage());
+        }
+        return lista;
+    }
+
+
+    public String obtenerCorreoPorId(int idUsuario) {
+    String correo = null;
+    String sql = "SELECT correo FROM usuarios WHERE id_usuario = ?";
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, idUsuario);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                correo = rs.getString("correo");
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error obteniendo correo del usuario: " + e.getMessage());
+    }
+    return correo;
+}
 
 }
