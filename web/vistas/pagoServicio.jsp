@@ -102,6 +102,8 @@
 
             <input type="hidden" name="mora" id="moraHidden" value="0.00">
             <input type="hidden" name="total" id="totalHidden" value="0.00">
+            <input type="hidden" name="idCatalogo" id="idCatalogoHidden" value="">
+
 
             <div class="mb-3">
                 <label>Observaciones *</label>
@@ -143,6 +145,7 @@ const btnConsultar = document.getElementById("btnConsultar");
 const camposPago = document.getElementById("camposPago");
 const cantidadBase = <%= cantidad %>;
 const fechaLimite = new Date("<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(fechaLimite) %>");
+const idCatalogoHidden = document.getElementById("idCatalogoHidden");
 
 // Limitar fecha de vencimiento a hoy o posterior
 document.addEventListener("DOMContentLoaded", () => {
@@ -222,20 +225,24 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Calcula mora y total
+
 function actualizarTotal() {
     const tipo = tipoPagoSelect.value;
     let mora = 0;
 
     if(tipo === "Mantenimiento") {
         const hoy = new Date();
-        hoy.setHours(0,0,0,0);
         const fechaLim = new Date(fechaLimite);
-        fechaLim.setHours(0,0,0,0);
-        if(hoy > fechaLim) {
+        if(hoy > fechaLim){
             const diffTime = hoy - fechaLim;
             const diasRetraso = Math.floor(diffTime / (1000*60*60*24));
             mora = diasRetraso * 25;
         }
+        idCatalogoHidden.value = 77;
+    } else if(tipo === "Multa") {
+        idCatalogoHidden.value = 78;
+    } else if(tipo === "Reinstalación de servicios") {
+        idCatalogoHidden.value = 79;
     }
 
     document.getElementById("mora").value = mora.toFixed(2);
@@ -243,12 +250,11 @@ function actualizarTotal() {
 
     let total = 0;
     switch(tipo){
-        case "Mantenimiento": total = cantidadBase; break;
+        case "Mantenimiento": total = 550; break;
         case "Multa": total = 250; break;
         case "Reinstalación de servicios": total = 750; break;
     }
     total += mora;
-
     document.getElementById("total").value = total.toFixed(2);
     document.getElementById("totalHidden").value = total.toFixed(2);
 
